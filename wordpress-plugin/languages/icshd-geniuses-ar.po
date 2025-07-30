@@ -1,0 +1,716 @@
+# Arabic translation for ICSHD GENIUSES WordPress Plugin
+# Copyright (C) 2024 ICSHD
+# This file is distributed under the same license as the ICSHD GENIUSES package.
+msgid ""
+msgstr ""
+"Project-Id-Version: ICSHD GENIUSES 1.0.0\n"
+"Report-Msgid-Bugs-To: https://icshd.com/support\n"
+"POT-Creation-Date: 2024-01-01 12:00+0000\n"
+"PO-Revision-Date: 2024-01-01 12:00+0000\n"
+"Last-Translator: ICSHD Team <support@icshd.com>\n"
+"Language-Team: Arabic\n"
+"Language: ar\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=6; plural=n==0 ? 0 : n==1 ? 1 : n==2 ? 2 : n%100>=3 && n%100<=10 ? 3 : n%100>=11 ? 4 : 5;\n"
+"X-Generator: Poedit 3.0\n"
+
+# Plugin Information
+msgid "ICSHD GENIUSES"
+msgstr "عباقرة المعهد الدولي للحساب الذهني"
+
+msgid "Adaptive learning platform for mental math training with WordPress integration"
+msgstr "منصة تعلم تكيفية لتدريب الحساب الذهني مع تكامل ووردبريس"
+
+msgid "ICSHD Team"
+msgstr "فريق المعهد الدولي للحساب الذهني"
+
+# Menu Items
+msgid "GENIUSES Dashboard"
+msgstr "لوحة تحكم العباقرة"
+
+msgid "Settings"
+msgstr "الإعدادات"
+
+msgid "Users"
+msgstr "المستخدمون"
+
+msgid "Reports"
+msgstr "التقارير"
+
+msgid "Sync Status"
+msgstr "حالة المزامنة"
+
+# Dashboard
+msgid "Welcome to ICSHD GENIUSES"
+msgstr "مرحباً بك في عباقرة المعهد الدولي"
+
+msgid "Manage your adaptive learning platform from this dashboard."
+msgstr "إدارة منصة التعلم التكيفية من هذه اللوحة."
+
+msgid "API Connection Status"
+msgstr "حالة الاتصال بواجهة البرمجة"
+
+msgid "Connected"
+msgstr "متصل"
+
+msgid "Disconnected"
+msgstr "غير متصل"
+
+msgid "Testing..."
+msgstr "جاري الاختبار..."
+
+msgid "Test Connection"
+msgstr "اختبار الاتصال"
+
+msgid "Quick Actions"
+msgstr "إجراءات سريعة"
+
+msgid "Manage Settings"
+msgstr "إدارة الإعدادات"
+
+msgid "Sync Users"
+msgstr "مزامنة المستخدمين"
+
+msgid "Generate Reports"
+msgstr "إنشاء التقارير"
+
+msgid "View Activity"
+msgstr "عرض النشاط"
+
+# Statistics
+msgid "Total Users"
+msgstr "إجمالي المستخدمين"
+
+msgid "Active Sessions"
+msgstr "الجلسات النشطة"
+
+msgid "Completed Exercises"
+msgstr "التمارين المكتملة"
+
+msgid "Average Performance"
+msgstr "متوسط الأداء"
+
+msgid "Recent Activity"
+msgstr "النشاط الأخير"
+
+msgid "No recent activity"
+msgstr "لا يوجد نشاط حديث"
+
+# Settings Page
+msgid "ICSHD GENIUSES Settings"
+msgstr "إعدادات عباقرة المعهد الدولي"
+
+msgid "API Configuration"
+msgstr "إعدادات واجهة البرمجة"
+
+msgid "API Base URL"
+msgstr "رابط واجهة البرمجة الأساسي"
+
+msgid "The base URL for the GENIUSES backend API (e.g., http://localhost:5000/api)"
+msgstr "الرابط الأساسي لواجهة برمجة العباقرة الخلفية (مثال: http://localhost:5000/api)"
+
+msgid "Frontend URL"
+msgstr "رابط الواجهة الأمامية"
+
+msgid "The URL where the React frontend is hosted (e.g., http://localhost:3000)"
+msgstr "الرابط حيث تستضاف الواجهة الأمامية React (مثال: http://localhost:3000)"
+
+msgid "JWT Secret Key"
+msgstr "مفتاح JWT السري"
+
+msgid "Secret key used for JWT token encryption. Keep this secure!"
+msgstr "المفتاح السري المستخدم لتشفير رموز JWT. احتفظ به آمناً!"
+
+msgid "Generate New Secret"
+msgstr "إنشاء مفتاح جديد"
+
+msgid "Connection Test"
+msgstr "اختبار الاتصال"
+
+msgid "Authentication Settings"
+msgstr "إعدادات المصادقة"
+
+msgid "Enable SSO"
+msgstr "تفعيل تسجيل الدخول الموحد"
+
+msgid "Enable Single Sign-On with GENIUSES backend"
+msgstr "تفعيل تسجيل الدخول الموحد مع خلفية العباقرة"
+
+msgid "When enabled, users can authenticate using their GENIUSES credentials."
+msgstr "عند التفعيل، يمكن للمستخدمين المصادقة باستخدام بيانات اعتماد العباقرة."
+
+msgid "Auto Create Users"
+msgstr "إنشاء المستخدمين تلقائياً"
+
+msgid "Automatically create WordPress users from GENIUSES users"
+msgstr "إنشاء مستخدمي ووردبريس تلقائياً من مستخدمي العباقرة"
+
+msgid "When enabled, new WordPress users will be created automatically when they log in via GENIUSES."
+msgstr "عند التفعيل، سيتم إنشاء مستخدمي ووردبريس جدد تلقائياً عند تسجيل دخولهم عبر العباقرة."
+
+msgid "Allowed Roles"
+msgstr "الأدوار المسموحة"
+
+msgid "Select which roles are allowed to access GENIUSES features."
+msgstr "اختر الأدوار المسموح لها بالوصول إلى ميزات العباقرة."
+
+msgid "Student"
+msgstr "طالب"
+
+msgid "Trainer"
+msgstr "مدرب"
+
+msgid "Administrator"
+msgstr "مدير"
+
+msgid "Default Settings"
+msgstr "الإعدادات الافتراضية"
+
+msgid "Default Curriculum"
+msgstr "المنهج الافتراضي"
+
+msgid "Soroban (Abacus)"
+msgstr "السوروبان (المعداد)"
+
+msgid "Vedic Mathematics"
+msgstr "الرياضيات الفيدية"
+
+msgid "Logic & Reasoning"
+msgstr "المنطق والاستدلال"
+
+msgid "IQ Games"
+msgstr "ألعاب الذكاء"
+
+msgid "The default curriculum for new users and shortcodes."
+msgstr "المنهج الافتراضي للمستخدمين الجدد والرموز المختصرة."
+
+msgid "Advanced Settings"
+msgstr "الإعدادات المتقدمة"
+
+msgid "Debug Mode"
+msgstr "وضع التصحيح"
+
+msgid "Enable debug logging"
+msgstr "تفعيل سجل التصحيح"
+
+msgid "When enabled, detailed logs will be written to the WordPress error log."
+msgstr "عند التفعيل، ستُكتب سجلات مفصلة في سجل أخطاء ووردبريس."
+
+msgid "Cache Duration"
+msgstr "مدة التخزين المؤقت"
+
+msgid "5 minutes"
+msgstr "5 دقائق"
+
+msgid "10 minutes"
+msgstr "10 دقائق"
+
+msgid "30 minutes"
+msgstr "30 دقيقة"
+
+msgid "1 hour"
+msgstr "ساعة واحدة"
+
+msgid "How long to cache API responses."
+msgstr "كم من الوقت لتخزين استجابات واجهة البرمجة مؤقتاً."
+
+msgid "Save Settings"
+msgstr "حفظ الإعدادات"
+
+msgid "Clear Cache"
+msgstr "مسح التخزين المؤقت"
+
+msgid "Settings saved successfully!"
+msgstr "تم حفظ الإعدادات بنجاح!"
+
+msgid "Failed to save settings."
+msgstr "فشل في حفظ الإعدادات."
+
+# Users Management
+msgid "ICSHD GENIUSES Users"
+msgstr "مستخدمو عباقرة المعهد الدولي"
+
+msgid "Synchronization Statistics"
+msgstr "إحصائيات المزامنة"
+
+msgid "Synced"
+msgstr "مزامن"
+
+msgid "Errors"
+msgstr "أخطاء"
+
+msgid "Pending"
+msgstr "في الانتظار"
+
+msgid "Sync All Users"
+msgstr "مزامنة جميع المستخدمين"
+
+msgid "Refresh Statistics"
+msgstr "تحديث الإحصائيات"
+
+msgid "Last sync: %s"
+msgstr "آخر مزامنة: %s"
+
+msgid "Bulk Actions"
+msgstr "إجراءات مجمعة"
+
+msgid "Sync with Backend"
+msgstr "مزامنة مع الخلفية"
+
+msgid "Remove GENIUSES Data"
+msgstr "إزالة بيانات العباقرة"
+
+msgid "Apply"
+msgstr "تطبيق"
+
+msgid "Search users..."
+msgstr "البحث عن المستخدمين..."
+
+msgid "User"
+msgstr "المستخدم"
+
+msgid "GENIUSES Role"
+msgstr "دور العباقرة"
+
+msgid "Curriculum"
+msgstr "المنهج"
+
+msgid "Level"
+msgstr "المستوى"
+
+msgid "Sync Status"
+msgstr "حالة المزامنة"
+
+msgid "Actions"
+msgstr "الإجراءات"
+
+msgid "Sync"
+msgstr "مزامنة"
+
+msgid "Details"
+msgstr "التفاصيل"
+
+msgid "Never"
+msgstr "أبداً"
+
+msgid "Error"
+msgstr "خطأ"
+
+msgid "Success"
+msgstr "نجح"
+
+msgid "No GENIUSES users found."
+msgstr "لم يتم العثور على مستخدمي العباقرة."
+
+msgid "Add New GENIUSES User"
+msgstr "إضافة مستخدم عباقرة جديد"
+
+msgid "Select WordPress User"
+msgstr "اختر مستخدم ووردبريس"
+
+msgid "Select a user..."
+msgstr "اختر مستخدماً..."
+
+msgid "Starting Level"
+msgstr "المستوى البدائي"
+
+msgid "Add User"
+msgstr "إضافة مستخدم"
+
+# Reports
+msgid "ICSHD GENIUSES Reports"
+msgstr "تقارير عباقرة المعهد الدولي"
+
+msgid "Quick Statistics"
+msgstr "إحصائيات سريعة"
+
+msgid "Loading statistics..."
+msgstr "جاري تحميل الإحصائيات..."
+
+msgid "Generate New Report"
+msgstr "إنشاء تقرير جديد"
+
+msgid "Report Type"
+msgstr "نوع التقرير"
+
+msgid "Performance Report"
+msgstr "تقرير الأداء"
+
+msgid "Progress Report"
+msgstr "تقرير التقدم"
+
+msgid "Sessions Report"
+msgstr "تقرير الجلسات"
+
+msgid "Users Report"
+msgstr "تقرير المستخدمين"
+
+msgid "Adaptive Learning Report"
+msgstr "تقرير التعلم التكيفي"
+
+msgid "Curriculum Analysis"
+msgstr "تحليل المنهج"
+
+msgid "Select the type of report you want to generate."
+msgstr "اختر نوع التقرير الذي تريد إنشاءه."
+
+msgid "Date Range"
+msgstr "نطاق التاريخ"
+
+msgid "to"
+msgstr "إلى"
+
+msgid "Last Week"
+msgstr "الأسبوع الماضي"
+
+msgid "Last Month"
+msgstr "الشهر الماضي"
+
+msgid "Last Quarter"
+msgstr "الربع الماضي"
+
+msgid "Curriculum Filter"
+msgstr "مرشح المنهج"
+
+msgid "All Curricula"
+msgstr "جميع المناهج"
+
+msgid "Level Filter"
+msgstr "مرشح المستوى"
+
+msgid "All Levels"
+msgstr "جميع المستويات"
+
+msgid "User Role Filter"
+msgstr "مرشح دور المستخدم"
+
+msgid "All Roles"
+msgstr "جميع الأدوار"
+
+msgid "Students"
+msgstr "الطلاب"
+
+msgid "Trainers"
+msgstr "المدربون"
+
+msgid "Administrators"
+msgstr "المديرون"
+
+msgid "Export Format"
+msgstr "تنسيق التصدير"
+
+msgid "PDF Document"
+msgstr "مستند PDF"
+
+msgid "CSV Spreadsheet"
+msgstr "جدول بيانات CSV"
+
+msgid "Excel Workbook"
+msgstr "مصنف Excel"
+
+msgid "JSON Data"
+msgstr "بيانات JSON"
+
+msgid "Generate Report"
+msgstr "إنشاء التقرير"
+
+msgid "Preview Report"
+msgstr "معاينة التقرير"
+
+msgid "Recent Reports"
+msgstr "التقارير الأخيرة"
+
+msgid "Report Name"
+msgstr "اسم التقرير"
+
+msgid "Type"
+msgstr "النوع"
+
+msgid "Generated"
+msgstr "تم الإنشاء"
+
+msgid "Download"
+msgstr "تحميل"
+
+msgid "Regenerate"
+msgstr "إعادة إنشاء"
+
+msgid "No reports generated yet."
+msgstr "لم يتم إنشاء تقارير بعد."
+
+# Frontend
+msgid "Login to GENIUSES"
+msgstr "تسجيل الدخول إلى العباقرة"
+
+msgid "Username or Email"
+msgstr "اسم المستخدم أو البريد الإلكتروني"
+
+msgid "Password"
+msgstr "كلمة المرور"
+
+msgid "Login"
+msgstr "تسجيل الدخول"
+
+msgid "Logging in..."
+msgstr "جاري تسجيل الدخول..."
+
+msgid "Start Training Session"
+msgstr "بدء جلسة التدريب"
+
+msgid "View Progress"
+msgstr "عرض التقدم"
+
+msgid "My Dashboard"
+msgstr "لوحة تحكمي"
+
+msgid "Training Sessions"
+msgstr "جلسات التدريب"
+
+msgid "Progress Tracking"
+msgstr "تتبع التقدم"
+
+msgid "Leaderboard"
+msgstr "لوحة المتصدرين"
+
+msgid "Exercise Management"
+msgstr "إدارة التمارين"
+
+msgid "Statistics"
+msgstr "الإحصائيات"
+
+msgid "Enter your answer"
+msgstr "أدخل إجابتك"
+
+msgid "Submit"
+msgstr "إرسال"
+
+msgid "Skip"
+msgstr "تخطي"
+
+msgid "Hint"
+msgstr "تلميح"
+
+msgid "Correct!"
+msgstr "صحيح!"
+
+msgid "Incorrect. Try again."
+msgstr "خطأ. حاول مرة أخرى."
+
+msgid "Session Complete!"
+msgstr "اكتملت الجلسة!"
+
+msgid "Total Exercises"
+msgstr "إجمالي التمارين"
+
+msgid "Correct Answers"
+msgstr "الإجابات الصحيحة"
+
+msgid "Accuracy"
+msgstr "الدقة"
+
+msgid "Average Time"
+msgstr "متوسط الوقت"
+
+msgid "Start New Session"
+msgstr "بدء جلسة جديدة"
+
+# Levels
+msgid "Beginner"
+msgstr "مبتدئ"
+
+msgid "Elementary"
+msgstr "ابتدائي"
+
+msgid "Intermediate"
+msgstr "متوسط"
+
+msgid "Advanced"
+msgstr "متقدم"
+
+msgid "Expert"
+msgstr "خبير"
+
+msgid "Master"
+msgstr "أستاذ"
+
+msgid "Grandmaster"
+msgstr "أستاذ كبير"
+
+msgid "Champion"
+msgstr "بطل"
+
+msgid "Legend"
+msgstr "أسطورة"
+
+msgid "Genius"
+msgstr "عبقري"
+
+# Error Messages
+msgid "Login failed. Please check your credentials."
+msgstr "فشل تسجيل الدخول. يرجى التحقق من بيانات الاعتماد."
+
+msgid "Session expired. Please login again."
+msgstr "انتهت صلاحية الجلسة. يرجى تسجيل الدخول مرة أخرى."
+
+msgid "Connection failed. Please try again later."
+msgstr "فشل الاتصال. يرجى المحاولة مرة أخرى لاحقاً."
+
+msgid "Invalid data provided."
+msgstr "تم توفير بيانات غير صالحة."
+
+msgid "Access denied."
+msgstr "تم رفض الوصول."
+
+msgid "Feature not available."
+msgstr "الميزة غير متاحة."
+
+msgid "Please complete all required fields."
+msgstr "يرجى إكمال جميع الحقول المطلوبة."
+
+msgid "Invalid email format."
+msgstr "تنسيق البريد الإلكتروني غير صالح."
+
+msgid "Password must be at least 8 characters long."
+msgstr "يجب أن تكون كلمة المرور 8 أحرف على الأقل."
+
+# Success Messages
+msgid "Login successful!"
+msgstr "تم تسجيل الدخول بنجاح!"
+
+msgid "User synchronized successfully!"
+msgstr "تم مزامنة المستخدم بنجاح!"
+
+msgid "Settings updated successfully!"
+msgstr "تم تحديث الإعدادات بنجاح!"
+
+msgid "Report generated successfully!"
+msgstr "تم إنشاء التقرير بنجاح!"
+
+msgid "Cache cleared successfully!"
+msgstr "تم مسح التخزين المؤقت بنجاح!"
+
+msgid "User added successfully!"
+msgstr "تم إضافة المستخدم بنجاح!"
+
+# Confirmations
+msgid "Are you sure you want to delete this user?"
+msgstr "هل أنت متأكد من أنك تريد حذف هذا المستخدم؟"
+
+msgid "Are you sure you want to sync all users? This may take a while."
+msgstr "هل أنت متأكد من أنك تريد مزامنة جميع المستخدمين؟ قد يستغرق هذا وقتاً."
+
+msgid "Are you sure you want to reset all settings? This cannot be undone."
+msgstr "هل أنت متأكد من أنك تريد إعادة تعيين جميع الإعدادات؟ لا يمكن التراجع عن هذا."
+
+msgid "Are you sure you want to end this session?"
+msgstr "هل أنت متأكد من أنك تريد إنهاء هذه الجلسة؟"
+
+msgid "You have unsaved changes. Are you sure you want to leave?"
+msgstr "لديك تغييرات غير محفوظة. هل أنت متأكد من أنك تريد المغادرة؟"
+
+# Shortcode Descriptions
+msgid "Display the full GENIUSES application"
+msgstr "عرض تطبيق العباقرة الكامل"
+
+msgid "Show login form for GENIUSES users"
+msgstr "عرض نموذج تسجيل الدخول لمستخدمي العباقرة"
+
+msgid "Display user dashboard"
+msgstr "عرض لوحة تحكم المستخدم"
+
+msgid "Show training session interface"
+msgstr "عرض واجهة جلسة التدريب"
+
+msgid "Display user progress"
+msgstr "عرض تقدم المستخدم"
+
+msgid "Show leaderboard"
+msgstr "عرض لوحة المتصدرين"
+
+msgid "Display exercise management"
+msgstr "عرض إدارة التمارين"
+
+msgid "Show statistics"
+msgstr "عرض الإحصائيات"
+
+# Time and Date
+msgid "Today"
+msgstr "اليوم"
+
+msgid "Yesterday"
+msgstr "أمس"
+
+msgid "This Week"
+msgstr "هذا الأسبوع"
+
+msgid "This Month"
+msgstr "هذا الشهر"
+
+msgid "seconds"
+msgstr "ثوانٍ"
+
+msgid "minutes"
+msgstr "دقائق"
+
+msgid "hours"
+msgstr "ساعات"
+
+msgid "days"
+msgstr "أيام"
+
+# General
+msgid "Yes"
+msgstr "نعم"
+
+msgid "No"
+msgstr "لا"
+
+msgid "Cancel"
+msgstr "إلغاء"
+
+msgid "Close"
+msgstr "إغلاق"
+
+msgid "Save"
+msgstr "حفظ"
+
+msgid "Edit"
+msgstr "تحرير"
+
+msgid "Delete"
+msgstr "حذف"
+
+msgid "View"
+msgstr "عرض"
+
+msgid "Back"
+msgstr "رجوع"
+
+msgid "Next"
+msgstr "التالي"
+
+msgid "Previous"
+msgstr "السابق"
+
+msgid "Loading..."
+msgstr "جاري التحميل..."
+
+msgid "Please wait..."
+msgstr "يرجى الانتظار..."
+
+msgid "Processing..."
+msgstr "جاري المعالجة..."
+
+msgid "Completed"
+msgstr "مكتمل"
+
+msgid "Failed"
+msgstr "فشل"
+
+msgid "Unknown"
+msgstr "غير معروف"
+
+msgid "N/A"
+msgstr "غير متاح"

@@ -1,0 +1,44 @@
+{
+  "name": "icshd-geniuses",
+  "version": "1.0.0",
+  "description": "منصة الحساب الذهني الذكية - ICSHD GENIUSES Smart Mental Math Platform",
+  "main": "index.js",
+  "scripts": {
+    "dev": "concurrently \"npm run backend:dev\" \"npm run frontend:dev\"",
+    "backend:dev": "cd backend && npm run dev",
+    "frontend:dev": "cd frontend && npm start",
+    "backend:install": "cd backend && npm install",
+    "frontend:install": "cd frontend && npm install",
+    "install:all": "npm run backend:install && npm run frontend:install",
+    "build": "cd frontend && npm run build",
+    "test": "npm run backend:test && npm run frontend:test",
+    "backend:test": "cd backend && npm test",
+    "frontend:test": "cd frontend && npm test"
+  },
+  "keywords": [
+    "mental-math",
+    "soroban",
+    "vedic-math",
+    "education",
+    "wordpress-plugin",
+    "react",
+    "nodejs"
+  ],
+  "author": "ICSHD Team",
+  "license": "MIT",
+  "devDependencies": {
+    "concurrently": "^7.6.0"
+  },
+  "engines": {
+    "node": ">=16.0.0",
+    "npm": ">=8.0.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/icshd/icshd-geniuses.git"
+  },
+  "bugs": {
+    "url": "https://github.com/icshd/icshd-geniuses/issues"
+  },
+  "homepage": "https://github.com/icshd/icshd-geniuses#readme"
+}

@@ -1,0 +1,207 @@
+version: '3.8'
+
+services:
+  # Main Application
+  icshd-geniuses:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: icshd-geniuses-app
+    restart: unless-stopped
+    ports:
+      - "3001:3001"
+    environment:
+      - NODE_ENV=production
+    env_file:
+      - backend/.env.production
+    volumes:
+      - uploads:/var/uploads/icshd-geniuses
+      - logs:/var/log/icshd-geniuses
+      - ./ssl:/etc/ssl:ro
+    depends_on:
+      - mongodb
+      - redis
+    networks:
+      - icshd-network
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.icshd-geniuses.rule=Host(`api.icshd-geniuses.com`)"
+      - "traefik.http.routers.icshd-geniuses.tls=true"
+      - "traefik.http.routers.icshd-geniuses.tls.certresolver=letsencrypt"
+
+  # MongoDB Database
+  mongodb:
+    image: mongo:6.0
+    container_name: icshd-geniuses-mongodb
+    restart: unless-stopped
+    ports:
+      - "27017:27017"
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: admin
+      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_ROOT_PASSWORD}
+      MONGO_INITDB_DATABASE: icshd_geniuses_prod
+    volumes:
+      - mongodb_data:/data/db
+      - mongodb_config:/data/configdb
+      - ./scripts/mongo-init.js:/docker-entrypoint-initdb.d/mongo-init.js:ro
+    networks:
+      - icshd-network
+    command: mongod --auth --replSet rs0
+
+  # Redis for Caching and Sessions
+  redis:
+    image: redis:7-alpine
+    container_name: icshd-geniuses-redis
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    command: redis-server --requirepass ${REDIS_PASSWORD} --appendonly yes
+    volumes:
+      - redis_data:/data
+    networks:
+      - icshd-network
+
+  # Nginx Reverse Proxy
+  nginx:
+    image: nginx:alpine
+    container_name: icshd-geniuses-nginx
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./nginx/sites-available:/etc/nginx/sites-available:ro
+      - ./ssl:/etc/ssl:ro
+      - uploads:/var/www/uploads:ro
+      - logs:/var/log/nginx
+    depends_on:
+      - icshd-geniuses
+    networks:
+      - icshd-network
+
+  # Database Backup Service
+  mongodb-backup:
+    image: mongo:6.0
+    container_name: icshd-geniuses-backup
+    restart: "no"
+    environment:
+      MONGO_HOST: mongodb
+      MONGO_PORT: 27017
+      MONGO_DB: icshd_geniuses_prod
+      MONGO_USER: ${DB_USER}
+      MONGO_PASSWORD: ${DB_PASSWORD}
+    volumes:
+      - backups:/backups
+      - ./scripts/backup.sh:/backup.sh:ro
+    networks:
+      - icshd-network
+    entrypoint: /backup.sh
+    profiles:
+      - backup
+
+  # Log Management (ELK Stack - Optional)
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.8.0
+    container_name: icshd-geniuses-elasticsearch
+    restart: unless-stopped
+    environment:
+      - discovery.type=single-node
+      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+      - xpack.security.enabled=false
+    volumes:
+      - elasticsearch_data:/usr/share/elasticsearch/data
+    networks:
+      - icshd-network
+    profiles:
+      - monitoring
+
+  logstash:
+    image: docker.elastic.co/logstash/logstash:8.8.0
+    container_name: icshd-geniuses-logstash
+    restart: unless-stopped
+    volumes:
+      - ./logstash/pipeline:/usr/share/logstash/pipeline:ro
+      - logs:/var/log/icshd-geniuses:ro
+    depends_on:
+      - elasticsearch
+    networks:
+      - icshd-network
+    profiles:
+      - monitoring
+
+  kibana:
+    image: docker.elastic.co/kibana/kibana:8.8.0
+    container_name: icshd-geniuses-kibana
+    restart: unless-stopped
+    ports:
+      - "5601:5601"
+    environment:
+      ELASTICSEARCH_HOSTS: http://elasticsearch:9200
+    depends_on:
+      - elasticsearch
+    networks:
+      - icshd-network
+    profiles:
+      - monitoring
+
+  # Monitoring with Prometheus and Grafana
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: icshd-geniuses-prometheus
+    restart: unless-stopped
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - prometheus_data:/prometheus
+    networks:
+      - icshd-network
+    profiles:
+      - monitoring
+
+  grafana:
+    image: grafana/grafana:latest
+    container_name: icshd-geniuses-grafana
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    environment:
+      GF_SECURITY_ADMIN_PASSWORD: ${GRAFANA_PASSWORD}
+    volumes:
+      - grafana_data:/var/lib/grafana
+      - ./monitoring/grafana/dashboards:/etc/grafana/provisioning/dashboards:ro
+      - ./monitoring/grafana/datasources:/etc/grafana/provisioning/datasources:ro
+    depends_on:
+      - prometheus
+    networks:
+      - icshd-network
+    profiles:
+      - monitoring
+
+volumes:
+  mongodb_data:
+    driver: local
+  mongodb_config:
+    driver: local
+  redis_data:
+    driver: local
+  uploads:
+    driver: local
+  logs:
+    driver: local
+  backups:
+    driver: local
+  elasticsearch_data:
+    driver: local
+  prometheus_data:
+    driver: local
+  grafana_data:
+    driver: local
+
+networks:
+  icshd-network:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.20.0.0/16
