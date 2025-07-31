@@ -2,8 +2,9 @@
 const express = require('express');
 const router = express.Router();
 // استيراد وظائف التحكم (controllers) التي تحتوي على منطق العمل
-// تم تصحيح المسار ليتطابق تمامًا مع حالة الأحرف على GitHub: Auth.Controller.js
+// المسار الصحيح بعد إعادة التسمية النهائية
 const { registerUser, loginUser, getMe } = require('../controllers/userAuth.js');
+
 // @desc    تسجيل مستخدم جديد
 // @route   POST /api/v1/auth/register
 // @access  عام (Public)

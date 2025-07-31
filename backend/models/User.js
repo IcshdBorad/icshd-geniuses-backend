@@ -1,19 +1,19 @@
+// backend/models/User.js
+const mongoose = require('mongoose');
+const bcrypt = require('bcryptjs'); // لتشفير كلمات المرور
+const jwt = require('jsonwebtoken'); // لإنشاء رموز JWT
+// لا نحتاج لـ { DataTypes } و { getConnection, dbType } إذا كنا نركز فقط على MongoDB حاليًا
+
 /**
  * User Model for ICSHD GENIUSES
- * Supports both MongoDB (Mongoose) and MySQL (Sequelize)
+ * يدعم فقط MongoDB (Mongoose) في هذا الإصدار لتجنب التعقيد.
  */
 
-const mongoose = require('mongoose');
-const { DataTypes } = require('sequelize');
-const bcrypt = require('bcryptjs');
-const jwt = require('jsonwebtoken');
-const { getConnection, dbType } = require('../config/database');
-
 // MongoDB Schema (Mongoose)
-const mongoUserSchema = new mongoose.Schema({
+const UserSchema = new mongoose.Schema({
   username: {
     type: String,
-    required: true,
+    required: [true, 'Please add a username'],
     unique: true,
     trim: true,
     minlength: 3,
@@ -21,15 +21,16 @@ const mongoUserSchema = new mongoose.Schema({
   },
   email: {
     type: String,
-    required: true,
+    required: [true, 'Please add an email'],
     unique: true,
     lowercase: true,
     match: [/^\w+([.-]?\w+)*@\w+([.-]?\w+)*(\.\w{2,3})+$/, 'Please enter a valid email']
   },
   password: {
     type: String,
-    required: true,
-    minlength: 6
+    required: [true, 'Please add a password'],
+    minlength: 6,
+    select: false // لا يتم إرجاع كلمة المرور في الاستعلامات افتراضيًا
   },
   role: {
     type: String,
@@ -39,12 +40,12 @@ const mongoUserSchema = new mongoose.Schema({
   profile: {
     firstName: {
       type: String,
-      required: true,
+      required: [true, 'Please add a first name'],
       trim: true
     },
     lastName: {
       type: String,
-      required: true,
+      required: [true, 'Please add a last name'],
       trim: true
     },
     dateOfBirth: Date,
@@ -151,36 +152,36 @@ const mongoUserSchema = new mongoose.Schema({
     }
   }
 }, {
-  timestamps: true,
+  timestamps: true, // يضيف createdAt و updatedAt تلقائيًا
   toJSON: { virtuals: true },
   toObject: { virtuals: true }
 });
 
 // Virtual for full name
-mongoUserSchema.virtual('fullName').get(function() {
+UserSchema.virtual('fullName').get(function() {
   return `${this.profile.firstName} ${this.profile.lastName}`;
 });
 
 // Pre-save middleware to hash password
-mongoUserSchema.pre('save', async function(next) {
+UserSchema.pre('save', async function(next) {
   if (!this.isModified('password')) return next();
-  
+    
   try {
-    const salt = await bcrypt.genSalt(12);
+    const salt = await bcrypt.genSalt(12); // استخدم 12 لتشفير أقوى
     this.password = await bcrypt.hash(this.password, salt);
     next();
   } catch (error) {
-    next(error);
+    next(error); // تمرير الخطأ إلى middleware التالي
   }
 });
 
-// Method to compare password
-mongoUserSchema.methods.comparePassword = async function(candidatePassword) {
+// Method to compare password (matchPassword بدلاً من comparePassword لتوحيد التسمية)
+UserSchema.methods.matchPassword = async function(candidatePassword) {
   return await bcrypt.compare(candidatePassword, this.password);
 };
 
-// Method to generate JWT token
-mongoUserSchema.methods.generateAuthToken = function() {
+// Method to generate JWT token (getSignedJwtToken بدلاً من generateAuthToken لتوحيد التسمية)
+UserSchema.methods.getSignedJwtToken = function() {
   return jwt.sign(
     { 
       id: this._id, 
@@ -188,172 +189,23 @@ mongoUserSchema.methods.generateAuthToken = function() {
       role: this.role 
     },
     process.env.JWT_SECRET,
-    { expiresIn: process.env.JWT_EXPIRES_IN || '7d' }
+    { expiresIn: process.env.JWT_EXPIRE || '7d' } // JWT_EXPIRE بدلاً من JWT_EXPIRES_IN لتوحيد التسمية
   );
 };
 
 // Method to generate student code
-mongoUserSchema.methods.generateStudentCode = function() {
+UserSchema.methods.generateStudentCode = function() {
   const timestamp = Date.now().toString(36);
   const random = Math.random().toString(36).substr(2, 5);
   return `STU-${timestamp}-${random}`.toUpperCase();
 };
 
 // Method to generate trainer code
-mongoUserSchema.methods.generateTrainerCode = function() {
+UserSchema.methods.generateTrainerCode = function() {
   const timestamp = Date.now().toString(36);
   const random = Math.random().toString(36).substr(2, 5);
   return `TRA-${timestamp}-${random}`.toUpperCase();
 };
 
-// MySQL Model (Sequelize)
-const createMySQLUserModel = (sequelize) => {
-  const User = sequelize.define('User', {
-    id: {
-      type: DataTypes.INTEGER,
-      primaryKey: true,
-      autoIncrement: true
-    },
-    username: {
-      type: DataTypes.STRING(50),
-      allowNull: false,
-      unique: true
-    },
-    email: {
-      type: DataTypes.STRING(100),
-      allowNull: false,
-      unique: true,
-      validate: {
-        isEmail: true
-      }
-    },
-    password: {
-      type: DataTypes.STRING(255),
-      allowNull: false
-    },
-    role: {
-      type: DataTypes.ENUM('admin', 'trainer', 'student'),
-      defaultValue: 'student'
-    },
-    firstName: {
-      type: DataTypes.STRING(50),
-      allowNull: false
-    },
-    lastName: {
-      type: DataTypes.STRING(50),
-      allowNull: false
-    },
-    dateOfBirth: DataTypes.DATE,
-    phone: DataTypes.STRING(20),
-    avatar: DataTypes.TEXT,
-    bio: DataTypes.TEXT,
-    studentCode: {
-      type: DataTypes.STRING(20),
-      unique: true
-    },
-    trainerId: {
-      type: DataTypes.INTEGER,
-      references: {
-        model: 'users',
-        key: 'id'
-      }
-    },
-    ageGroup: {
-      type: DataTypes.ENUM('under_7', '7_to_10', 'over_10', 'under_12', 'over_12')
-    },
-    currentLevelSoroban: {
-      type: DataTypes.STRING(10),
-      defaultValue: 'A1'
-    },
-    currentLevelVedic: {
-      type: DataTypes.STRING(10),
-      defaultValue: 'V1'
-    },
-    currentLevelLogic: {
-      type: DataTypes.STRING(10),
-      defaultValue: 'L1'
-    },
-    currentLevelIq: {
-      type: DataTypes.STRING(10),
-      defaultValue: 'IQ1'
-    },
-    trainerCode: {
-      type: DataTypes.STRING(20),
-      unique: true
-    },
-    specializations: {
-      type: DataTypes.JSON
-    },
-    maxStudents: {
-      type: DataTypes.INTEGER,
-      defaultValue: 50
-    },
-    isActive: {
-      type: DataTypes.BOOLEAN,
-      defaultValue: true
-    },
-    isEmailVerified: {
-      type: DataTypes.BOOLEAN,
-      defaultValue: false
-    },
-    lastLogin: DataTypes.DATE,
-    loginAttempts: {
-      type: DataTypes.INTEGER,
-      defaultValue: 0
-    },
-    lockUntil: DataTypes.DATE,
-    preferences: {
-      type: DataTypes.JSON
-    },
-    subscription: {
-      type: DataTypes.JSON
-    }
-  }, {
-    tableName: 'users',
-    hooks: {
-      beforeCreate: async (user) => {
-        if (user.password) {
-          const salt = await bcrypt.genSalt(12);
-          user.password = await bcrypt.hash(user.password, salt);
-        }
-      },
-      beforeUpdate: async (user) => {
-        if (user.changed('password')) {
-          const salt = await bcrypt.genSalt(12);
-          user.password = await bcrypt.hash(user.password, salt);
-        }
-      }
-    }
-  });
-
-  // Instance methods for MySQL model
-  User.prototype.comparePassword = async function(candidatePassword) {
-    return await bcrypt.compare(candidatePassword, this.password);
-  };
-
-  User.prototype.generateAuthToken = function() {
-    return jwt.sign(
-      { 
-        id: this.id, 
-        email: this.email, 
-        role: this.role 
-      },
-      process.env.JWT_SECRET,
-      { expiresIn: process.env.JWT_EXPIRES_IN || '7d' }
-    );
-  };
-
-  return User;
-};
-
-// Export appropriate model based on database type
-let UserModel;
-
-if (dbType === 'mongodb') {
-  UserModel = mongoose.model('User', mongoUserSchema);
-} else if (dbType === 'mysql') {
-  const sequelize = getConnection();
-  UserModel = createMySQLUserModel(sequelize);
-}
-
-module.exports = UserModel;
+// تصدير نموذج المستخدم
+module.exports = mongoose.model('User', UserSchema);
