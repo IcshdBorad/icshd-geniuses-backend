@@ -6,7 +6,14 @@
 const express = require('express');
 const router = express.Router();
 const AdaptiveSessionController = require('../controllers/AdaptiveSessionController');
-const { authenticateToken, authorizeRoles, validateRequest } = require('../middleware/auth');
+
+// تأكد أن authenticateToken و validateRequest يتم استيرادهما من الملف الصحيح
+// على الأرجح هو '../middleware/auth' كما كان لديك، ولكن هذا يعتمد على كيفية تنظيمك لملفات الـ middleware
+const { authenticateToken, validateRequest } = require('../middleware/auth'); 
+
+// استورد authorizeRoles من الملف الجديد authMiddleware.js
+const { authorizeRoles } = require('../middleware/authMiddleware'); // <== هذا هو التغيير الرئيسي في سطر الاستيراد
+
 const { body, param, query } = require('express-validator');
 
 // Initialize controller (will be injected with Socket.io instance)
@@ -163,7 +170,7 @@ router.get('/analytics/:studentId',
           message: 'Access denied'
         });
       }
-      
+
       await adaptiveController.getSessionAnalytics(req, res);
     } catch (error) {
       console.error('Route error - get analytics:', error);
@@ -224,10 +231,10 @@ router.get('/students/:studentId/profile',
 
       const AdaptiveLearningEngine = require('../adaptive/AdaptiveLearningEngine');
       const adaptiveEngine = new AdaptiveLearningEngine();
-      
+
       const { curriculum = 'soroban' } = req.query;
       const adaptiveData = await adaptiveEngine.getAdaptiveData(req.params.studentId, curriculum);
-      
+
       res.json({
         success: true,
         data: {
@@ -281,17 +288,17 @@ router.get('/students/:studentId/recommendations',
 
       const AdaptiveLearningEngine = require('../adaptive/AdaptiveLearningEngine');
       const adaptiveEngine = new AdaptiveLearningEngine();
-      
+
       const { curriculum = 'soroban' } = req.query;
       const adaptiveData = await adaptiveEngine.getAdaptiveData(req.params.studentId, curriculum);
-      
+
       // Generate recommendations based on current profile
       const recommendations = adaptiveEngine.generateRecommendations(adaptiveData, {
         accuracy: adaptiveData.averageAccuracy || 0,
         averageTime: adaptiveData.averageSpeed || 0,
         consistency: adaptiveData.averageConsistency || 0
       });
-      
+
       res.json({
         success: true,
         data: {
@@ -344,22 +351,22 @@ router.post('/students/:studentId/preferences',
 
       const AdaptiveData = require('../models/AdaptiveData');
       const { curriculum = 'soroban' } = req.query;
-      
+
       // Update adaptive data with preferences
       const updateData = {};
       if (req.body.learningStyle) updateData.learningStyle = req.body.learningStyle;
       if (req.body.preferredDifficulty) updateData.preferredDifficulty = req.body.preferredDifficulty;
       if (req.body.timePreferences) updateData.timePreferences = req.body.timePreferences;
       if (req.body.focusAreas) updateData.preferredExerciseTypes = req.body.focusAreas;
-      
+
       updateData.lastUpdated = new Date();
-      
+
       const adaptiveData = await AdaptiveData.findOneAndUpdate(
         { studentId: req.params.studentId, curriculum },
         { $set: updateData },
         { new: true, upsert: true }
       );
-      
+
       res.json({
         success: true,
         data: {
@@ -392,7 +399,7 @@ router.get('/sessions/:sessionId/real-time-data',
     try {
       const Session = require('../models/Session');
       const session = await Session.findById(req.params.sessionId);
-      
+
       if (!session) {
         return res.status(404).json({
           success: false,
@@ -410,7 +417,7 @@ router.get('/sessions/:sessionId/real-time-data',
 
       // Get active session data if available
       const activeSession = adaptiveController.activeSessions.get(req.params.sessionId);
-      
+
       const realTimeData = {
         sessionId: req.params.sessionId,
         status: session.status,
@@ -423,7 +430,7 @@ router.get('/sessions/:sessionId/real-time-data',
           adaptiveController.calculateSessionMetrics(session.exercises.slice(0, activeSession.currentExerciseIndex + 1)) :
           null
       };
-      
+
       res.json({
         success: true,
         data: realTimeData
