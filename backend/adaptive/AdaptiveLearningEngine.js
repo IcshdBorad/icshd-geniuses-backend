@@ -1,532 +1,477 @@
 /**
- * Adaptive Learning Engine for ICSHD GENIUSES
- * Handles personalized learning paths and difficulty adjustment
+ * Adaptive Exercise Generator for ICSHD GENIUSES
+ * Generates personalized exercises based on student performance and learning patterns
  */
 
-const AdaptiveData = require('../models/AdaptiveData');
-const Session = require('../models/Session');
 const Exercise = require('../models/Exercise');
-const ExerciseGenerator = require('../exercise-generator/ExerciseGenerator');
+const ExerciseGenerator = require('../exercise-generator/ExerciseGenerator'); // <== تأكد من أن هذا المسار صحيح الآن
 
-class AdaptiveLearningEngine {
-  constructor() {
-    this.difficultyFactors = {
-      accuracy: 0.4,        // 40% weight on accuracy
-      speed: 0.3,           // 30% weight on speed
-      consistency: 0.2,     // 20% weight on consistency
-      progression: 0.1      // 10% weight on progression rate
-    };
+class AdaptiveExerciseGenerator extends ExerciseGenerator {
+    constructor() {
+        super();
+        
+        // Difficulty progression curves for different curricula
+        this.difficultyProgression = {
+            soroban: {
+                1: { range: [1, 10], operations: ['addition'], digits: 1 },
+                2: { range: [1, 50], operations: ['addition', 'subtraction'], digits: 2 },
+                3: { range: [1, 100], operations: ['addition', 'subtraction'], digits: 2 },
+                4: { range: [1, 500], operations: ['addition', 'subtraction', 'multiplication'], digits: 3 },
+                5: { range: [1, 1000], operations: ['addition', 'subtraction', 'multiplication'], digits: 3 },
+                6: { range: [1, 5000], operations: ['addition', 'subtraction', 'multiplication', 'division'], digits: 4 },
+                7: { range: [1, 10000], operations: ['addition', 'subtraction', 'multiplication', 'division'], digits: 4 },
+                8: { range: [1, 50000], operations: ['mixed'], digits: 5 },
+                9: { range: [1, 100000], operations: ['mixed'], digits: 5 },
+                10: { range: [1, 1000000], operations: ['mixed'], digits: 6 }
+            },
+            vedic: {
+                1: { techniques: ['basic_multiplication'], range: [1, 20] },
+                2: { techniques: ['basic_multiplication', 'squares'], range: [1, 50] },
+                3: { techniques: ['multiplication_11', 'squares'], range: [1, 100] },
+                4: { techniques: ['multiplication_11', 'squares', 'cubes'], range: [1, 200] },
+                5: { techniques: ['all_from_9', 'squares', 'cubes'], range: [1, 500] },
+                6: { techniques: ['vertically_crosswise', 'division'], range: [1, 1000] },
+                7: { techniques: ['advanced_multiplication', 'division'], range: [1, 2000] },
+                8: { techniques: ['complex_operations'], range: [1, 5000] },
+                9: { techniques: ['expert_techniques'], range: [1, 10000] },
+                10: { techniques: ['master_level'], range: [1, 100000] }
+            },
+            logic: {
+                1: { types: ['pattern_simple'], complexity: 1 },
+                2: { types: ['pattern_simple', 'sequence'], complexity: 2 },
+                3: { types: ['pattern_medium', 'sequence'], complexity: 2 },
+                4: { types: ['pattern_medium', 'sequence', 'logic_basic'], complexity: 3 },
+                5: { types: ['pattern_complex', 'logic_basic'], complexity: 3 },
+                6: { types: ['pattern_complex', 'logic_medium'], complexity: 4 },
+                7: { types: ['logic_medium', 'reasoning'], complexity: 4 },
+                8: { types: ['logic_complex', 'reasoning'], complexity: 5 },
+                9: { types: ['advanced_reasoning'], complexity: 5 },
+                10: { types: ['expert_logic'], complexity: 6 }
+            },
+            iqgames: {
+                1: { games: ['memory_basic'], difficulty: 1 },
+                2: { games: ['memory_basic', 'attention'], difficulty: 2 },
+                3: { games: ['memory_medium', 'attention'], difficulty: 2 },
+                4: { games: ['memory_medium', 'spatial'], difficulty: 3 },
+                5: { games: ['memory_complex', 'spatial'], difficulty: 3 },
+                6: { games: ['spatial_complex', 'reasoning'], difficulty: 4 },
+                7: { games: ['reasoning', 'creativity'], difficulty: 4 },
+                8: { games: ['advanced_reasoning', 'creativity'], difficulty: 5 },
+                9: { games: ['expert_games'], difficulty: 5 },
+                10: { games: ['master_challenges'], difficulty: 6 }
+            }
+        };
 
-    this.adaptationThresholds = {
-      increaseThreshold: 0.85,  // Increase difficulty if performance > 85%
-      decreaseThreshold: 0.65,  // Decrease difficulty if performance < 65%
-      minAccuracy: 0.5,         // Minimum accuracy to maintain level
-      maxConsecutiveErrors: 3,   // Max consecutive errors before adjustment
-    };
-
-    this.learningStyles = {
-      visual: { imageWeight: 1.5, textWeight: 0.8 },
-      auditory: { soundWeight: 1.5, textWeight: 1.0 },
-      kinesthetic: { interactiveWeight: 1.5, staticWeight: 0.8 },
-      mixed: { imageWeight: 1.0, textWeight: 1.0, soundWeight: 1.0 }
-    };
-  }
-
-  /**
-   * Get or create adaptive data for a student
-   */
-  async getAdaptiveData(studentId, curriculum) {
-    try {
-      let adaptiveData = await AdaptiveData.findOne({ 
-        studentId, 
-        curriculum 
-      });
-
-      if (!adaptiveData) {
-        adaptiveData = new AdaptiveData({
-          studentId,
-          curriculum,
-          currentLevel: 1,
-          difficultyScore: 0.5,
-          learningStyle: 'mixed',
-          performanceHistory: [],
-          weaknessAreas: [],
-          strengthAreas: [],
-          preferredExerciseTypes: [],
-          adaptationHistory: [],
-          lastUpdated: new Date()
-        });
-        await adaptiveData.save();
-      }
-
-      return adaptiveData;
-    } catch (error) {
-      console.error('Error getting adaptive data:', error);
-      throw error;
-    }
-  }
-
-  /**
-   * Analyze student performance and update adaptive data
-   */
-  async analyzePerformance(studentId, sessionId) {
-    try {
-      const session = await Session.findById(sessionId)
-        .populate('exercises.exercise');
-
-      if (!session) {
-        throw new Error('Session not found');
-      }
-
-      const adaptiveData = await this.getAdaptiveData(studentId, session.curriculum);
-      
-      // Calculate performance metrics
-      const metrics = this.calculatePerformanceMetrics(session);
-      
-      // Update performance history
-      this.updatePerformanceHistory(adaptiveData, metrics);
-      
-      // Identify strengths and weaknesses
-      await this.identifyStrengthsWeaknesses(adaptiveData, session);
-      
-      // Detect learning style
-      this.detectLearningStyle(adaptiveData, session);
-      
-      // Calculate new difficulty score
-      const newDifficultyScore = this.calculateDifficultyScore(adaptiveData, metrics);
-      
-      // Update adaptive data
-      adaptiveData.difficultyScore = newDifficultyScore;
-      adaptiveData.lastSessionMetrics = metrics;
-      adaptiveData.lastUpdated = new Date();
-      
-      // Add adaptation history entry
-      adaptiveData.adaptationHistory.push({
-        sessionId,
-        oldDifficulty: adaptiveData.difficultyScore,
-        newDifficulty: newDifficultyScore,
-        reason: this.getAdaptationReason(metrics),
-        timestamp: new Date()
-      });
-
-      // Keep only last 50 adaptation history entries
-      if (adaptiveData.adaptationHistory.length > 50) {
-        adaptiveData.adaptationHistory = adaptiveData.adaptationHistory.slice(-50);
-      }
-
-      await adaptiveData.save();
-      
-      return {
-        metrics,
-        adaptiveData,
-        recommendations: this.generateRecommendations(adaptiveData, metrics)
-      };
-    } catch (error) {
-      console.error('Error analyzing performance:', error);
-      throw error;
-    }
-  }
-
-  /**
-   * Calculate comprehensive performance metrics
-   */
-  calculatePerformanceMetrics(session) {
-    const exercises = session.exercises || [];
-    const totalExercises = exercises.length;
-    
-    if (totalExercises === 0) {
-      return {
-        accuracy: 0,
-        averageTime: 0,
-        consistency: 0,
-        difficultyHandling: 0,
-        errorPatterns: [],
-        speedTrend: 'stable'
-      };
+        // Learning style adaptations
+        this.learningStyleAdaptations = {
+            visual: {
+                preferredFormats: ['image', 'diagram', 'chart'],
+                avoidFormats: ['text_only'],
+                enhancementFactors: { visual: 1.5, interactive: 1.2 }
+            },
+            auditory: {
+                preferredFormats: ['audio', 'verbal'],
+                avoidFormats: ['silent'],
+                enhancementFactors: { audio: 1.5, rhythm: 1.3 }
+            },
+            kinesthetic: {
+                preferredFormats: ['interactive', 'hands_on'],
+                avoidFormats: ['static'],
+                enhancementFactors: { interactive: 1.5, movement: 1.4 }
+            },
+            mixed: {
+                preferredFormats: ['varied'],
+                avoidFormats: [],
+                enhancementFactors: { balanced: 1.2 }
+            }
+        };
     }
 
-    // Basic metrics
-    const correctAnswers = exercises.filter(ex => ex.isCorrect).length;
-    const accuracy = correctAnswers / totalExercises;
-    
-    const totalTime = exercises.reduce((sum, ex) => sum + (ex.timeSpent || 0), 0);
-    const averageTime = totalTime / totalExercises;
-    
-    // Consistency calculation (standard deviation of response times)
-    const times = exercises.map(ex => ex.timeSpent || 0);
-    const timeVariance = this.calculateVariance(times);
-    const consistency = Math.max(0, 1 - (timeVariance / (averageTime * averageTime)));
-    
-    // Difficulty handling
-    const difficultyScores = exercises.map(ex => {
-      const difficulty = ex.exercise?.difficulty || 1;
-      return ex.isCorrect ? difficulty : 0;
-    });
-    const difficultyHandling = difficultyScores.reduce((sum, score) => sum + score, 0) / totalExercises;
-    
-    // Error patterns
-    const errorPatterns = this.identifyErrorPatterns(exercises);
-    
-    // Speed trend analysis
-    const speedTrend = this.analyzeSpeedTrend(exercises);
-    
-    return {
-      accuracy,
-      averageTime,
-      consistency,
-      difficultyHandling,
-      errorPatterns,
-      speedTrend,
-      totalExercises,
-      correctAnswers
-    };
-  }
+    /**
+     * Generate adaptive exercise set based on student profile
+     */
+    async generateAdaptiveSet(curriculum, level, count, adaptiveProfile) {
+        try {
+            const {
+                targetDifficulty,
+                preferredTypes,
+                avoidTypes,
+                learningStyle,
+                focusAreas,
+                weaknessAreas,
+                strengthAreas
+            } = adaptiveProfile;
 
-  /**
-   * Update performance history with decay factor
-   */
-  updatePerformanceHistory(adaptiveData, newMetrics) {
-    const history = adaptiveData.performanceHistory || [];
-    
-    // Add new metrics
-    history.push({
-      ...newMetrics,
-      timestamp: new Date()
-    });
-    
-    // Keep only last 20 sessions
-    if (history.length > 20) {
-      adaptiveData.performanceHistory = history.slice(-20);
-    } else {
-      adaptiveData.performanceHistory = history;
-    }
-    
-    // Calculate weighted averages with decay
-    const weights = history.map((_, index) => Math.pow(0.9, history.length - 1 - index));
-    const totalWeight = weights.reduce((sum, weight) => sum + weight, 0);
-    
-    adaptiveData.averageAccuracy = history.reduce((sum, metrics, index) => 
-      sum + metrics.accuracy * weights[index], 0) / totalWeight;
-    
-    adaptiveData.averageSpeed = history.reduce((sum, metrics, index) => 
-      sum + metrics.averageTime * weights[index], 0) / totalWeight;
-    
-    adaptiveData.averageConsistency = history.reduce((sum, metrics, index) => 
-      sum + metrics.consistency * weights[index], 0) / totalWeight;
-  }
+            const exercises = [];
+            const progression = this.difficultyProgression[curriculum][level];
+            
+            if (!progression) {
+                throw new Error(`No progression defined for ${curriculum} level ${level}`);
+            }
 
-  /**
-   * Identify strengths and weaknesses based on exercise types
-   */
-  async identifyStrengthsWeaknesses(adaptiveData, session) {
-    const exercises = session.exercises || [];
-    const typePerformance = {};
-    
-    // Group by exercise type
-    exercises.forEach(ex => {
-      const type = ex.exercise?.type || 'unknown';
-      if (!typePerformance[type]) {
-        typePerformance[type] = { correct: 0, total: 0, totalTime: 0 };
-      }
-      
-      typePerformance[type].total++;
-      typePerformance[type].totalTime += ex.timeSpent || 0;
-      if (ex.isCorrect) {
-        typePerformance[type].correct++;
-      }
-    });
-    
-    // Calculate performance scores for each type
-    const typeScores = Object.entries(typePerformance).map(([type, data]) => ({
-      type,
-      accuracy: data.correct / data.total,
-      averageTime: data.totalTime / data.total,
-      score: (data.correct / data.total) * (1 / (data.totalTime / data.total))
-    }));
-    
-    // Sort by performance
-    typeScores.sort((a, b) => b.score - a.score);
-    
-    // Update strengths (top 30%) and weaknesses (bottom 30%)
-    const strengthCount = Math.ceil(typeScores.length * 0.3);
-    const weaknessCount = Math.ceil(typeScores.length * 0.3);
-    
-    adaptiveData.strengthAreas = typeScores
-      .slice(0, strengthCount)
-      .map(item => item.type);
-    
-    adaptiveData.weaknessAreas = typeScores
-      .slice(-weaknessCount)
-      .map(item => item.type);
-  }
+            // Calculate exercise distribution
+            const distribution = this.calculateExerciseDistribution(
+                count, 
+                preferredTypes, 
+                focusAreas, 
+                weaknessAreas
+            );
 
-  /**
-   * Detect learning style based on exercise preferences
-   */
-  detectLearningStyle(adaptiveData, session) {
-    const exercises = session.exercises || [];
-    const styleScores = {
-      visual: 0,
-      auditory: 0,
-      kinesthetic: 0,
-      mixed: 0
-    };
-    
-    exercises.forEach(ex => {
-      if (ex.isCorrect) {
-        const exercise = ex.exercise;
-        if (exercise?.metadata?.hasImage) styleScores.visual++;
-        if (exercise?.metadata?.hasAudio) styleScores.auditory++;
-        if (exercise?.metadata?.isInteractive) styleScores.kinesthetic++;
-        styleScores.mixed++;
-      }
-    });
-    
-    // Determine dominant learning style
-    const maxScore = Math.max(...Object.values(styleScores));
-    const dominantStyle = Object.keys(styleScores).find(style => styleScores[style] === maxScore);
-    
-    // Update learning style with confidence
-    if (maxScore > exercises.length * 0.6) {
-      adaptiveData.learningStyle = dominantStyle;
-    }
-  }
+            // Generate exercises for each type in distribution
+            for (const [exerciseType, typeCount] of Object.entries(distribution)) {
+                if (typeCount > 0 && !avoidTypes.includes(exerciseType)) {
+                    const typeExercises = await this.generateTypeSpecificExercises(
+                        curriculum,
+                        exerciseType,
+                        typeCount,
+                        level,
+                        targetDifficulty,
+                        learningStyle,
+                        progression
+                    );
+                    exercises.push(...typeExercises);
+                }
+            }
 
-  /**
-   * Calculate new difficulty score
-   */
-  calculateDifficultyScore(adaptiveData, metrics) {
-    const current = adaptiveData.difficultyScore || 0.5;
-    const factors = this.difficultyFactors;
-    
-    // Calculate performance score
-    const performanceScore = 
-      metrics.accuracy * factors.accuracy +
-      (1 - Math.min(metrics.averageTime / 60, 1)) * factors.speed +
-      metrics.consistency * factors.consistency +
-      metrics.difficultyHandling * factors.progression;
-    
-    // Determine adjustment direction and magnitude
-    let adjustment = 0;
-    
-    if (performanceScore > this.adaptationThresholds.increaseThreshold) {
-      // Increase difficulty
-      adjustment = (performanceScore - this.adaptationThresholds.increaseThreshold) * 0.1;
-    } else if (performanceScore < this.adaptationThresholds.decreaseThreshold) {
-      // Decrease difficulty
-      adjustment = (performanceScore - this.adaptationThresholds.decreaseThreshold) * 0.1;
-    }
-    
-    // Apply adjustment with bounds
-    const newScore = Math.max(0.1, Math.min(1.0, current + adjustment));
-    
-    return Math.round(newScore * 100) / 100; // Round to 2 decimal places
-  }
+            // Fill remaining slots with balanced exercises
+            const remaining = count - exercises.length;
+            if (remaining > 0) {
+                const balancedExercises = await this.generateBalancedExercises(
+                    curriculum,
+                    remaining,
+                    level,
+                    targetDifficulty,
+                    learningStyle,
+                    progression
+                );
+                exercises.push(...balancedExercises);
+            }
 
-  /**
-   * Generate personalized exercise recommendations
-   */
-  async generatePersonalizedExercises(studentId, curriculum, count = 10) {
-    try {
-      const adaptiveData = await this.getAdaptiveData(studentId, curriculum);
-      const generator = new ExerciseGenerator();
-      
-      const recommendations = {
-        targetDifficulty: adaptiveData.difficultyScore,
-        preferredTypes: this.getPreferredExerciseTypes(adaptiveData),
-        avoidTypes: adaptiveData.weaknessAreas.slice(0, 2), // Limit weakness focus
-        learningStyle: adaptiveData.learningStyle,
-        focusAreas: this.getFocusAreas(adaptiveData)
-      };
-      
-      const exercises = await generator.generateAdaptiveSet(
-        curriculum,
-        adaptiveData.currentLevel,
-        count,
-        recommendations
-      );
-      
-      return {
-        exercises,
-        reasoning: this.getRecommendationReasoning(adaptiveData, recommendations),
-        adaptiveData
-      };
-    } catch (error) {
-      console.error('Error generating personalized exercises:', error);
-      throw error;
-    }
-  }
+            // Shuffle and apply final adaptations
+            const adaptedExercises = this.applyLearningStyleAdaptations(
+                this.shuffleArray(exercises.slice(0, count)),
+                learningStyle
+            );
 
-  /**
-   * Get preferred exercise types based on performance
-   */
-  getPreferredExerciseTypes(adaptiveData) {
-    const preferred = [];
-    
-    // Add strength areas
-    preferred.push(...adaptiveData.strengthAreas);
-    
-    // Add some weakness areas for improvement (balanced approach)
-    if (adaptiveData.weaknessAreas.length > 0) {
-      preferred.push(adaptiveData.weaknessAreas[0]); // Focus on one weakness at a time
-    }
-    
-    return preferred;
-  }
-
-  /**
-   * Get focus areas for targeted practice
-   */
-  getFocusAreas(adaptiveData) {
-    const focusAreas = [];
-    
-    // Focus on weaknesses that are improving
-    const improvingWeaknesses = adaptiveData.weaknessAreas.filter(area => {
-      // Check if this area is showing improvement in recent sessions
-      return this.isAreaImproving(adaptiveData, area);
-    });
-    
-    focusAreas.push(...improvingWeaknesses);
-    
-    // Add challenging areas from strengths for advancement
-    if (adaptiveData.strengthAreas.length > 0) {
-      focusAreas.push(adaptiveData.strengthAreas[0]);
-    }
-    
-    return focusAreas;
-  }
-
-  /**
-   * Check if a specific area is improving
-   */
-  isAreaImproving(adaptiveData, area) {
-    const recentHistory = adaptiveData.performanceHistory.slice(-5);
-    if (recentHistory.length < 2) return false;
-    
-    // Simple trend analysis - compare first half vs second half
-    const firstHalf = recentHistory.slice(0, Math.floor(recentHistory.length / 2));
-    const secondHalf = recentHistory.slice(Math.floor(recentHistory.length / 2));
-    
-    const firstAvg = firstHalf.reduce((sum, h) => sum + h.accuracy, 0) / firstHalf.length;
-    const secondAvg = secondHalf.reduce((sum, h) => sum + h.accuracy, 0) / secondHalf.length;
-    
-    return secondAvg > firstAvg;
-  }
-
-  /**
-   * Generate recommendations for the student
-   */
-  generateRecommendations(adaptiveData, metrics) {
-    const recommendations = [];
-    
-    // Accuracy recommendations
-    if (metrics.accuracy < 0.7) {
-      recommendations.push({
-        type: 'accuracy',
-        priority: 'high',
-        message: 'ركز على الدقة أكثر من السرعة. خذ وقتك في التفكير قبل الإجابة.',
-        action: 'practice_accuracy'
-      });
-    }
-    
-    // Speed recommendations
-    if (metrics.averageTime > 45) {
-      recommendations.push({
-        type: 'speed',
-        priority: 'medium',
-        message: 'حاول تحسين سرعة الإجابة من خلال ممارسة التمارين الأساسية.',
-        action: 'practice_speed'
-      });
-    }
-    
-    // Consistency recommendations
-    if (metrics.consistency < 0.6) {
-      recommendations.push({
-        type: 'consistency',
-        priority: 'medium',
-        message: 'اعمل على تحسين الثبات في الأداء من خلال التدريب المنتظم.',
-        action: 'practice_consistency'
-      });
-    }
-    
-    // Weakness area recommendations
-    if (adaptiveData.weaknessAreas.length > 0) {
-      recommendations.push({
-        type: 'weakness',
-        priority: 'high',
-        message: `ركز على تحسين أداءك في: ${adaptiveData.weaknessAreas.join('، ')}`,
-        action: 'practice_weakness',
-        areas: adaptiveData.weaknessAreas
-      });
-    }
-    
-    return recommendations;
-  }
-
-  /**
-   * Utility functions
-   */
-  calculateVariance(numbers) {
-    const mean = numbers.reduce((sum, num) => sum + num, 0) / numbers.length;
-    const squaredDiffs = numbers.map(num => Math.pow(num - mean, 2));
-    return squaredDiffs.reduce((sum, diff) => sum + diff, 0) / numbers.length;
-  }
-
-  identifyErrorPatterns(exercises) {
-    const patterns = [];
-    let consecutiveErrors = 0;
-    
-    exercises.forEach((ex, index) => {
-      if (!ex.isCorrect) {
-        consecutiveErrors++;
-      } else {
-        if (consecutiveErrors >= 2) {
-          patterns.push({
-            type: 'consecutive_errors',
-            count: consecutiveErrors,
-            startIndex: index - consecutiveErrors
-          });
+            return adaptedExercises;
+        } catch (error) {
+            console.error('Error generating adaptive exercise set:', error);
+            throw error;
         }
-        consecutiveErrors = 0;
-      }
-    });
-    
-    return patterns;
-  }
+    }
 
-  analyzeSpeedTrend(exercises) {
-    if (exercises.length < 3) return 'insufficient_data';
-    
-    const times = exercises.map(ex => ex.timeSpent || 0);
-    const firstHalf = times.slice(0, Math.floor(times.length / 2));
-    const secondHalf = times.slice(Math.floor(times.length / 2));
-    
-    const firstAvg = firstHalf.reduce((sum, time) => sum + time, 0) / firstHalf.length;
-    const secondAvg = secondHalf.reduce((sum, time) => sum + time, 0) / secondHalf.length;
-    
-    const difference = (firstAvg - secondAvg) / firstAvg;
-    
-    if (difference > 0.1) return 'improving';
-    if (difference < -0.1) return 'declining';
-    return 'stable';
-  }
+    /**
+     * Calculate optimal distribution of exercise types
+     */
+    calculateExerciseDistribution(count, preferredTypes, focusAreas, weaknessAreas) {
+        const distribution = {};
+        
+        // Allocate 40% to focus areas (weakness improvement)
+        const focusCount = Math.floor(count * 0.4);
+        if (focusAreas && focusAreas.length > 0) {
+            const perFocus = Math.floor(focusCount / focusAreas.length);
+            focusAreas.forEach(area => {
+                distribution[area] = perFocus;
+            });
+        }
 
-  getAdaptationReason(metrics) {
-    if (metrics.accuracy > 0.85) return 'high_accuracy';
-    if (metrics.accuracy < 0.65) return 'low_accuracy';
-    if (metrics.averageTime < 20) return 'very_fast';
-    if (metrics.averageTime > 60) return 'too_slow';
-    return 'balanced_adjustment';
-  }
+        // Allocate 30% to preferred types (strength reinforcement)
+        const preferredCount = Math.floor(count * 0.3);
+        if (preferredTypes && preferredTypes.length > 0) {
+            const perPreferred = Math.floor(preferredCount / preferredTypes.length);
+            preferredTypes.forEach(type => {
+                distribution[type] = (distribution[type] || 0) + perPreferred;
+            });
+        }
 
-  getRecommendationReasoning(adaptiveData, recommendations) {
-    return {
-      difficultyLevel: `مستوى الصعوبة الحالي: ${Math.round(adaptiveData.difficultyScore * 100)}%`,
-      learningStyle: `نمط التعلم المفضل: ${adaptiveData.learningStyle}`,
-      strengths: `نقاط القوة: ${adaptiveData.strengthAreas.join('، ') || 'لا توجد بيانات كافية'}`,
-      improvements: `مجالات التحسين: ${adaptiveData.weaknessAreas.join('، ') || 'لا توجد مجالات محددة'}`
-    };
-  }
+        // Allocate 20% to weakness areas (targeted improvement)
+        const weaknessCount = Math.floor(count * 0.2);
+        if (weaknessAreas && weaknessAreas.length > 0) {
+            const perWeakness = Math.floor(weaknessCount / weaknessAreas.length);
+            weaknessAreas.forEach(area => {
+                distribution[area] = (distribution[area] || 0) + perWeakness;
+            });
+        }
+
+        // Remaining 10% for exploration/variety
+        const explorationCount = count - Object.values(distribution).reduce((sum, val) => sum + val, 0);
+        if (explorationCount > 0) {
+            distribution['mixed'] = explorationCount;
+        }
+
+        return distribution;
+    }
+
+    /**
+     * Generate exercises for specific type
+     */
+    async generateTypeSpecificExercises(curriculum, exerciseType, count, level, targetDifficulty, learningStyle, progression) {
+        const exercises = [];
+        
+        for (let i = 0; i < count; i++) {
+            let exercise;
+            
+            switch (curriculum) {
+                case 'soroban':
+                    exercise = await this.generateSorobanExercise(exerciseType, level, targetDifficulty, progression);
+                    break;
+                case 'vedic':
+                    exercise = await this.generateVedicExercise(exerciseType, level, targetDifficulty, progression);
+                    break;
+                case 'logic':
+                    exercise = await this.generateLogicExercise(exerciseType, level, targetDifficulty, progression);
+                    break;
+                case 'iqgames':
+                    exercise = await this.generateIQGameExercise(exerciseType, level, targetDifficulty, progression);
+                    break;
+                default:
+                    throw new Error(`Unknown curriculum: ${curriculum}`);
+            }
+
+            if (exercise) {
+                exercises.push(exercise);
+            }
+        }
+
+        return exercises;
+    }
+
+    /**
+     * Generate Soroban exercises with adaptive difficulty
+     */
+    async generateSorobanExercise(type, level, targetDifficulty, progression) {
+        const { range, operations, digits } = progression;
+        const adjustedRange = this.adjustRangeForDifficulty(range, targetDifficulty);
+        
+        const operation = operations[Math.floor(Math.random() * operations.length)];
+        
+        let question, answer, steps;
+        
+        switch (operation) {
+            case 'addition':
+                ({ question, answer, steps } = this.generateAdditionProblem(adjustedRange, digits));
+                break;
+            case 'subtraction':
+                ({ question, answer, steps } = this.generateSubtractionProblem(adjustedRange, digits));
+                break;
+            case 'multiplication':
+                ({ question, answer, steps } = this.generateMultiplicationProblem(adjustedRange, digits));
+                break;
+            case 'division':
+                ({ question, answer, steps } = this.generateDivisionProblem(adjustedRange, digits));
+                break;
+            case 'mixed':
+                ({ question, answer, steps } = this.generateMixedProblem(adjustedRange, digits));
+                break;
+        }
+
+        return {
+            curriculum: 'soroban',
+            type: operation,
+            level,
+            difficulty: Math.round(targetDifficulty * 5),
+            question,
+            answer,
+            steps,
+            timeLimit: this.calculateTimeLimit(targetDifficulty, operation),
+            hint: this.generateSorobanHint(operation, question),
+            metadata: {
+                operation,
+                digits,
+                range: adjustedRange,
+                adaptiveDifficulty: targetDifficulty
+            }
+        };
+    }
+
+    /**
+     * Generate Vedic Math exercises
+     */
+    async generateVedicExercise(type, level, targetDifficulty, progression) {
+        const { techniques, range } = progression;
+        const adjustedRange = this.adjustRangeForDifficulty(range, targetDifficulty);
+        
+        const technique = techniques[Math.floor(Math.random() * techniques.length)];
+        
+        let question, answer, steps, vedicMethod;
+        
+        switch (technique) {
+            case 'basic_multiplication':
+                ({ question, answer, steps, vedicMethod } = this.generateBasicVedicMultiplication(adjustedRange));
+                break;
+            case 'squares':
+                ({ question, answer, steps, vedicMethod } = this.generateVedicSquares(adjustedRange));
+                break;
+            case 'multiplication_11':
+                ({ question, answer, steps, vedicMethod } = this.generateMultiplicationBy11(adjustedRange));
+                break;
+            case 'all_from_9':
+                ({ question, answer, steps, vedicMethod } = this.generateAllFrom9(adjustedRange));
+                break;
+            case 'vertically_crosswise':
+                ({ question, answer, steps, vedicMethod } = this.generateVerticallyCrosswise(adjustedRange));
+                break;
+            default:
+                ({ question, answer, steps, vedicMethod } = this.generateBasicVedicMultiplication(adjustedRange));
+        }
+
+        return {
+            curriculum: 'vedic',
+            type: technique,
+            level,
+            difficulty: Math.round(targetDifficulty * 5),
+            question,
+            answer,
+            steps,
+            vedicMethod,
+            timeLimit: this.calculateTimeLimit(targetDifficulty, 'vedic'),
+            hint: this.generateVedicHint(technique, question),
+            metadata: {
+                technique,
+                range: adjustedRange,
+                adaptiveDifficulty: targetDifficulty
+            }
+        };
+    }
+
+    /**
+     * Generate Logic exercises
+     */
+    async generateLogicExercise(type, level, targetDifficulty, progression) {
+        const { types, complexity } = progression;
+        const adjustedComplexity = Math.round(complexity * targetDifficulty);
+        
+        const logicType = types[Math.floor(Math.random() * types.length)];
+        
+        let question, answer, pattern, explanation;
+        
+        switch (logicType) {
+            case 'pattern_simple':
+                ({ question, answer, pattern, explanation } = this.generateSimplePattern(adjustedComplexity));
+                break;
+            case 'pattern_medium':
+                ({ question, answer, pattern, explanation } = this.generateMediumPattern(adjustedComplexity));
+                break;
+            case 'pattern_complex':
+                ({ question, answer, pattern, explanation } = this.generateComplexPattern(adjustedComplexity));
+                break;
+            case 'sequence':
+                ({ question, answer, pattern, explanation } = this.generateSequence(adjustedComplexity));
+                break;
+            case 'logic_basic':
+                ({ question, answer, pattern, explanation } = this.generateBasicLogic(adjustedComplexity));
+                break;
+            case 'reasoning':
+                ({ question, answer, pattern, explanation } = this.generateReasoning(adjustedComplexity));
+                break;
+            default:
+                ({ question, answer, pattern, explanation } = this.generateSimplePattern(adjustedComplexity));
+        }
+
+        return {
+            curriculum: 'logic',
+            type: logicType,
+            level,
+            difficulty: Math.round(targetDifficulty * 5),
+            question,
+            answer,
+            pattern,
+            explanation,
+            timeLimit: this.calculateTimeLimit(targetDifficulty, 'logic'),
+            hint: this.generateLogicHint(logicType, pattern),
+            metadata: {
+                logicType,
+                complexity: adjustedComplexity,
+                adaptiveDifficulty: targetDifficulty
+            }
+        };
+    }
+
+    /**
+     * Generate IQ Game exercises
+     */
+    async generateIQGameExercise(type, level, targetDifficulty, progression) {
+        const { games, difficulty } = progression;
+        const adjustedDifficulty = Math.round(difficulty * targetDifficulty);
+        
+        const gameType = games[Math.floor(Math.random() * games.length)];
+        
+        let question, answer, gameData, instructions;
+        
+        switch (gameType) {
+            case 'memory_basic':
+                ({ question, answer, gameData, instructions } = this.generateBasicMemoryGame(adjustedDifficulty));
+                break;
+            case 'memory_medium':
+                ({ question, answer, gameData, instructions } = this.generateMediumMemoryGame(adjustedDifficulty));
+                break;
+            case 'attention':
+                ({ question, answer, gameData, instructions } = this.generateAttentionGame(adjustedDifficulty));
+                break;
+            case 'spatial':
+                ({ question, answer, gameData, instructions } = this.generateSpatialGame(adjustedDifficulty));
+                break;
+            case 'reasoning':
+                ({ question, answer, gameData, instructions } = this.generateReasoningGame(adjustedDifficulty));
+                break;
+            default:
+                ({ question, answer, gameData, instructions } = this.generateBasicMemoryGame(adjustedDifficulty));
+        }
+
+        return {
+            curriculum: 'iqgames',
+            type: gameType,
+            level,
+            difficulty: Math.round(targetDifficulty * 5),
+            question,
+            answer,
+            gameData,
+            instructions,
+            timeLimit: this.calculateTimeLimit(targetDifficulty, 'iqgames'),
+            hint: this.generateIQGameHint(gameType, gameData),
+            metadata: {
+                gameType,
+                difficulty: adjustedDifficulty,
+                adaptiveDifficulty: targetDifficulty
+            }
+        };
+    }
+
+    /**
+     * Apply learning style adaptations
+     */
+    applyLearningStyleAdaptations(exercises, learningStyle) {
+        const adaptations = this.learningStyleAdaptations[learningStyle] || this.learningStyleAdaptations.mixed;
+        
+        return exercises.map(exercise => {
+            const adapted = { ...exercise };
+            
+            // Apply format preferences
+            if (adaptations.preferredFormats.includes('image')) {
+                adapted.metadata.hasImage = true;
+                adapted.metadata.visualEnhanced = true;
+            }
+            
+            if (adaptations.preferredFormats.includes('audio')) {
+                adapted.metadata.hasAudio = true;
+                adapted.metadata.audioEnhanced = true;
+            }
+            
+            if (adaptations.preferredFormats.includes('interactive')) {
+                adapted.metadata.isInteractive = true;
+                adapted.metadata.interactiveEnhanced = true;
+            }
+            
+            // Adjust time limits based on learning style
+            if (learningStyle === 'kinesthetic') {
+                adapted.timeLimit = Math.round(adapted.timeLimit * 1.2); // More time for hands-on learners
+            } else if (learningStyle === 'visual') {
+                adapted.timeLimit = Math.round(adapted.timeLimit * 1.1); // Slightly more time for visual processing
+            }
+            
+            return adapted;
+        });
+    }
 }
 
-module.exports = AdaptiveLearningEngine;
+module.exports = AdaptiveExerciseGenerator;
