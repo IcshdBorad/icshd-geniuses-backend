@@ -1,0 +1,45 @@
+# Node.js
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnpm-debug.log*
+.npm/
+.npmrc
+.yarn/
+.editorconfig
+
+# Environment variables
+.env
+.env.development.local
+.env.test.local
+.env.production.local
+.env.local
+.env.save # هذا ظهر في قائمة الملفات غير المتعقبة لديك
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Mac OS
+.DS_Store
+
+# Visual Studio Code
+.vscode/
+
+# Build artifacts
+dist/
+build/
+coverage/
+
+# Misc
+.cache/
+*.pem # شهادات SSL (إذا كنت تستخدمها محليا)
+*.crt
+*.key
+
+# Specific files from your git status
+server.txt # هذا ظهر في قائمة الملفات غير المتعقبة لديك، ويبدو أنه ملف نصي غير مرغوب فيه في Git
