@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testExecutions version="1">
+  <file path="/mnt/c/Users/ICSHD/CascadeProjects/icshd-geniuses/backend/tests/unit/services/GamificationService.test.js">
+  </file>
+  <file path="/mnt/c/Users/ICSHD/CascadeProjects/icshd-geniuses/backend/tests/unit/models/Gamification.test.js">
+  </file>
+  <file path="/mnt/c/Users/ICSHD/CascadeProjects/icshd-geniuses/backend/tests/unit/models/User.test.js">
+  </file>
+  <file path="/mnt/c/Users/ICSHD/CascadeProjects/icshd-geniuses/backend/tests/unit/models/Session.test.js">
+  </file>
+  <file path="/mnt/c/Users/ICSHD/CascadeProjects/icshd-geniuses/backend/tests/integration/gamification.integration.test.js">
+  </file>
+</testExecutions>
