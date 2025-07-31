@@ -35,10 +35,20 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/icshd/icshd-geniuses.git"
+    "url": "git+https://github.com/icshd/icshd-geniuses.git"
   },
   "bugs": {
     "url": "https://github.com/icshd/icshd-geniuses/issues"
   },
-  "homepage": "https://github.com/icshd/icshd-geniuses#readme"
+  "homepage": "https://github.com/icshd/icshd-geniuses#readme",
+  "directories": {
+    "doc": "docs"
+  },
+  "dependencies": {
+    "cors": "^2.8.5",
+    "dotenv": "^17.2.1",
+    "express": "^5.1.0",
+    "mongodb": "^6.18.0",
+    "mongoose": "^8.17.0"
+  }
 }
