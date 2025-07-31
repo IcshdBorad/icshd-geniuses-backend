@@ -5,8 +5,14 @@ const connectDB = require('./config/db');
 const app = express();
 const cors = require('cors'); // استيراد مكتبة CORS
 
-// **هنا نقوم بتفعيل CORS أولاً قبل أي middleware آخر**
-app.use(cors());
+// **الحل النهائي لمشكلة CORS**
+// هذا يضمن أن يتم تفعيل CORS بشكل صارم في بداية كل طلب.
+app.use((req, res, next) => {
+  res.header('Access-Control-Allow-Origin', '*'); // السماح لأي مصدر [cite: user_input].
+  res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
+  res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+  next();
+});
 
 // الاتصال بقاعدة البيانات
 connectDB();
