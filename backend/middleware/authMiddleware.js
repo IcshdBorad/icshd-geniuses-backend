@@ -1,17 +1,13 @@
 exports.authorizeRoles = (...roles) => {
     return (req, res, next) => {
-        if (!req.user || !req.user.role) {
-            return res.status(401).json({
-                success: false,
-                message: 'Not authenticated or user role not found.'
-            });
-        }
+        // هنا يتم التحقق من دور المستخدم (الموجود في req.user.role بعد المصادقة)
+        // إذا لم يكن لدى المستخدم الدور المطلوب، يتم إرسال خطأ 403
         if (!roles.includes(req.user.role)) {
             return res.status(403).json({
                 success: false,
                 message: `User role ${req.user.role} is not authorized to access this route`
             });
         }
-        next();
+        next(); // إذا كان الدور مسموحًا به، استمر إلى الدالة التالية
     };
 };
