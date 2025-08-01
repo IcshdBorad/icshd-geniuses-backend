@@ -1,40 +1,45 @@
-// استيراد المكتبات الأساسية
-require('dotenv').config();
 const express = require('express');
-const connectDB = require('./config/db');
+const mongoose = require('mongoose');
+const dotenv = require('dotenv');
+const cors = require('cors'); // *** تم إضافة مكتبة cors ***
+
+// Load environment variables from .env file
+dotenv.config();
+
 const app = express();
-const cors = require('cors'); // استيراد مكتبة CORS
 
-// **الحل النهائي لمشكلة CORS**
-// هذا يضمن أن يتم تفعيل CORS بشكل صارم في بداية كل طلب.
-app.use((req, res, next) => {
-  res.header('Access-Control-Allow-Origin', '*'); // السماح لأي مصدر [cite: user_input].
-  res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
-  res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization');
-  next();
-});
+// Middleware
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+app.use(cors()); // *** تم إضافة هذا السطر لاستخدام مكتبة cors ***
 
-// الاتصال بقاعدة البيانات
+// Connect to MongoDB
+const mongoURI = process.env.MONGO_URI;
+
+if (!mongoURI) {
+  console.error("MongoDB URI is not defined in environment variables.");
+  process.exit(1);
+}
+
+const connectDB = async () => {
+  try {
+    await mongoose.connect(mongoURI, {
+      useNewUrlParser: true,
+      useUnifiedTopology: true,
+    });
+    console.log("MongoDB Connected: " + mongoURI);
+  } catch (err) {
+    console.error(err.message);
+    process.exit(1);
+  }
+};
+
 connectDB();
 
-// الإعدادات
-const PORT = process.env.PORT || 3000;
+// API Routes
+app.use('/api/v1/auth', require('./routes/authRoute'));
 
-// Body Parser - يسمح للخادم بفهم البيانات المرسلة في طلبات JSON
-app.use(express.json());
+// Start server
+const PORT = process.env.PORT || 10000;
+app.listen(PORT, () => console.log(`Server running in ${process.env.NODE_ENV} mode on port ${PORT}`));
 
-// مسار اختبار بسيط
-app.get('/', (req, res) => {
-  res.send('🚀 ICSHD Geniuses API is running');
-});
-
-// مسارات API (هنا يتم استخدام المسارات التي تحددها)
-// app.use('/api/v1/auth', require('./routes/api/auth'));
-// app.use('/api/v1/users', require('./routes/api/users'));
-// app.use('/api/v1/posts', require('./routes/api/posts'));
-
-
-// تشغيل السيرفر
-app.listen(PORT, () => {
-  console.log(`✅ الخادم يعمل على http://localhost:${PORT}`);
-});
