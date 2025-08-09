@@ -11,9 +11,20 @@ connectDB();
 // الإعدادات
 const PORT = process.env.PORT || 3000;
 
-// إعداد CORS للسماح من أي مصدر (يمكنك استبداله بـ 'https://icshd.net' لأمان أكثر)
+// قراءة Origins من المتغير البيئي وتحويله لمصفوفة
+const allowedOrigins = process.env.CORS_ORIGIN
+  ? process.env.CORS_ORIGIN.split(',')
+  : ['*'];
+
 const corsOptions = {
-  origin: '*',
+  origin: function (origin, callback) {
+    // إذا لم يكن هناك Origin (مثل Postman) أو كان ضمن القائمة المسموحة
+    if (!origin || allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      callback(new Error('CORS not allowed for this origin'));
+    }
+  },
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization'],
 };
@@ -21,7 +32,7 @@ const corsOptions = {
 // تفعيل CORS
 app.use(cors(corsOptions));
 
-// معالجة جميع طلبات OPTIONS
+// معالجة OPTIONS لجميع المسارات
 app.options('*', cors(corsOptions));
 
 // Body Parser
