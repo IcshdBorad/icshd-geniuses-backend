@@ -1,45 +1,43 @@
+require('dotenv').config();
 const express = require('express');
-const mongoose = require('mongoose');
-const dotenv = require('dotenv');
-const cors = require('cors'); // *** تم إضافة مكتبة cors ***
-
-// Load environment variables from .env file
-dotenv.config();
+const cors = require('cors');
+const connectDB = require('./config/db');
 
 const app = express();
 
-// Middleware
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
-app.use(cors()); // *** تم إضافة هذا السطر لاستخدام مكتبة cors ***
-
-// Connect to MongoDB
-const mongoURI = process.env.MONGO_URI;
-
-if (!mongoURI) {
-  console.error("MongoDB URI is not defined in environment variables.");
-  process.exit(1);
-}
-
-const connectDB = async () => {
-  try {
-    await mongoose.connect(mongoURI, {
-      useNewUrlParser: true,
-      useUnifiedTopology: true,
-    });
-    console.log("MongoDB Connected: " + mongoURI);
-  } catch (err) {
-    console.error(err.message);
-    process.exit(1);
-  }
-};
-
+// الاتصال بقاعدة البيانات
 connectDB();
 
-// API Routes
-app.use('/api/v1/auth', require('./routes/authRoute'));
+// الإعدادات
+const PORT = process.env.PORT || 3000;
 
-// Start server
-const PORT = process.env.PORT || 10000;
-app.listen(PORT, () => console.log(`Server running in ${process.env.NODE_ENV} mode on port ${PORT}`));
+// إعداد CORS للسماح من أي مصدر (يمكنك استبداله بـ 'https://icshd.net' لأمان أكثر)
+const corsOptions = {
+  origin: '*',
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization'],
+};
 
+// تفعيل CORS
+app.use(cors(corsOptions));
+
+// معالجة جميع طلبات OPTIONS
+app.options('*', cors(corsOptions));
+
+// Body Parser
+app.use(express.json());
+
+// مسار اختبار
+app.get('/', (req, res) => {
+  res.send('🚀 ICSHD Geniuses API is running');
+});
+
+// مثال لمسار التسجيل
+app.post('/api/v1/auth/register', (req, res) => {
+  res.json({ message: '✅ تم التسجيل بنجاح', data: req.body });
+});
+
+// تشغيل السيرفر
+app.listen(PORT, () => {
+  console.log(`✅ الخادم يعمل على http://localhost:${PORT}`);
+});
