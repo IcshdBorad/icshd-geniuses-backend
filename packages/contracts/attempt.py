@@ -1,21 +1,28 @@
 from dataclasses import dataclass
 from datetime import datetime
+from typing import Optional
 
 
 @dataclass(frozen=True)
 class Attempt:
     """
-    Represents a single learner attempt.
+    Represents a learner attempt on a question.
     """
 
     identifier: str
 
-    skill_id: str
-
     learner_id: str
+
+    question_id: str
+
+    submitted_answer: str
 
     is_correct: bool
 
-    response_time_ms: int
+    duration_ms: int
 
-    created_at: datetime
+    attempted_at: datetime
+
+    score: float = 1.0
+
+    external_id: Optional[str] = None
