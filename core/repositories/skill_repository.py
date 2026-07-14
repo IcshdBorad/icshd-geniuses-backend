@@ -1,22 +1,17 @@
+from core.persistence.memory_database import MemoryDatabase
 from packages.contracts.skill import Skill
 
 
 class SkillRepository:
-    """
-    In-memory repository for skills.
-    """
 
-    def __init__(self):
-        self._skills: list[Skill] = []
+    def __init__(self, database: MemoryDatabase):
+        self.database = database
 
     def add(self, skill: Skill):
-        self._skills.append(skill)
-
-    def all(self):
-        return self._skills
+        self.database.skills[skill.identifier] = skill
 
     def by_id(self, identifier: str):
-        for skill in self._skills:
-            if skill.identifier == identifier:
-                return skill
-        return None
+        return self.database.skills.get(identifier)
+
+    def all(self):
+        return list(self.database.skills.values())
