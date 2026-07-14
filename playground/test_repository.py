@@ -1,7 +1,6 @@
 from packages.contracts.skill import Skill
 from core.domains.knowledge.repository import KnowledgeRepository
 
-
 repository = KnowledgeRepository()
 
 skill = Skill(
