@@ -1,7 +1,20 @@
-from enum import Enum
+from dataclasses import dataclass
 
 
-class SkillStatus(Enum):
-    ACTIVE = "active"
-    INACTIVE = "inactive"
-    DRAFT = "draft"
+@dataclass(frozen=True)
+class SkillStatus:
+    """
+    Represents learner mastery of one skill.
+    """
+
+    learner_id: str
+
+    skill_id: str
+
+    attempts: int
+
+    accuracy: float
+
+    average_time_ms: float
+
+    mastered: bool
