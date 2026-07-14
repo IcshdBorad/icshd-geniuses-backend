@@ -10,3 +10,7 @@ class Framework:
     identifier: str
     name: str
     description: str
+
+    is_active: bool = True
+
+    external_id: str | None = None

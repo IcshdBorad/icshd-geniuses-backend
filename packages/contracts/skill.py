@@ -1,5 +1,4 @@
 from dataclasses import dataclass
-from typing import Optional
 
 
 @dataclass(frozen=True)
@@ -9,6 +8,7 @@ class Skill:
     """
 
     identifier: str
+
     name: str
     description: str
 
@@ -17,4 +17,4 @@ class Skill:
 
     is_active: bool = True
 
-    external_id: Optional[str] = None
+    external_id: str | None = None

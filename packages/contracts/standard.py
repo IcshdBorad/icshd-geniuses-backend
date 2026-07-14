@@ -4,11 +4,15 @@ from dataclasses import dataclass
 @dataclass(frozen=True)
 class Standard:
     """
-    Represents an educational standard.
+    Represents a knowledge standard.
     """
 
     identifier: str
+    framework_id: str
+
     name: str
     description: str
 
-    framework_id: str
+    is_active: bool = True
+
+    external_id: str | None = None
