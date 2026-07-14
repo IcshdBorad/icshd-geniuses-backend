@@ -16,5 +16,8 @@ class QuestionTemplate:
     enabled: bool = True
     metadata: dict[str, Any] | None = None
 
-    def render(self) -> str:
-        return self.template
+    def render(self, **variables) -> str:
+        """
+        Renders the template by replacing placeholders with variables.
+        """
+        return self.template.format(**variables)
