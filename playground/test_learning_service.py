@@ -1,6 +1,16 @@
-class LearningService:
-    """
-    High-level orchestration for learner workflows.
-    """
+from core.services.learning_service import LearningService
+from packages.contracts.skill import Skill
 
-    pass
+service = LearningService()
+
+service.register_skill(
+    Skill(
+        identifier="SKILL-ADD-001",
+        name="Addition",
+        description="",
+        standard_id="STD-MA",
+        objective_id="OBJ-ADD-001",
+    )
+)
+
+print(service.get_skill("SKILL-ADD-001"))
