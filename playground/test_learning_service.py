@@ -1,5 +1,6 @@
-from core.services.learning_service import LearningService
+class LearningService:
+    """
+    High-level orchestration for learner workflows.
+    """
 
-service = LearningService()
-
-print(type(service).__name__)
+    pass
