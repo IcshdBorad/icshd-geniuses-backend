@@ -1,9 +1,11 @@
 from core.persistence.memory_database import MemoryDatabase
-from core.repositories.skill_repository import SkillRepository
+from core.repositories.memory_skill_repository import MemorySkillRepository
 from packages.contracts.skill import Skill
 
+
 db = MemoryDatabase()
-repo = SkillRepository(db)
+
+repo = MemorySkillRepository(db)
 
 skill = Skill(
     identifier="SKILL-ADD-001",
@@ -13,7 +15,7 @@ skill = Skill(
     objective_id="OBJ-ADD-001",
 )
 
-repo.add(skill)
+repo.save(skill)
 
-print(repo.by_id("SKILL-ADD-001"))
-print(repo.all())
+print(repo.get("SKILL-ADD-001"))
+print(repo.list())

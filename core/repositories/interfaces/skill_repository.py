@@ -3,9 +3,6 @@ from packages.contracts.skill import Skill
 
 
 class SkillRepository(ABC):
-    """
-    Repository interface for Skill objects.
-    """
 
     @abstractmethod
     def get(self, identifier: str) -> Skill | None:

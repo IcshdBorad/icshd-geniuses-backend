@@ -1,9 +1,10 @@
 from core.services.learning_service import LearningService
 from packages.contracts.skill import Skill
 
+
 service = LearningService()
 
-service.register_skill(
+service.save_skill(
     Skill(
         identifier="SKILL-ADD-001",
         name="Addition",
