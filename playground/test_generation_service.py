@@ -1,16 +1,19 @@
 from core.services.generation_service import GenerationService
-from core.domains.generation.template import QuestionTemplate
+from packages.contracts.question import Question
+
 
 service = GenerationService()
 
-template = QuestionTemplate(
-    identifier="TMP-001",
-    skill_id="SKILL-ADD-001",
-    name="Simple Addition",
-    template="3 + 5 = ?",
+service.save_question(
+    Question(
+        identifier="Q-001",
+        skill_id="SKILL-ADD-001",
+        prompt="3 + 5 = ?",
+        answer="8",
+        difficulty=1,
+        question_type="short_answer",
+    )
 )
 
-question = service.generate(template)
-
-print(question)
-print(service.all_questions())
+print(service.get_question("Q-001"))
+print(service.list_questions())

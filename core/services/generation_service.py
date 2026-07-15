@@ -1,20 +1,22 @@
 from core.persistence.memory_database import MemoryDatabase
-from core.repositories.question_repository import QuestionRepository
-from core.domains.generation.generator import QuestionGenerator
-from core.domains.generation.template import QuestionTemplate
+from core.repositories.memory_question_repository import MemoryQuestionRepository
+from packages.contracts.question import Question
 
 
 class GenerationService:
+    """
+    Application service for question generation.
+    """
 
     def __init__(self):
         self.database = MemoryDatabase()
-        self.repository = QuestionRepository(self.database)
-        self.generator = QuestionGenerator()
+        self.questions = MemoryQuestionRepository(self.database)
 
-    def generate(self, template: QuestionTemplate):
-        question = self.generator.generate(template)
-        self.repository.add(question)
-        return question
+    def save_question(self, question: Question):
+        self.questions.save(question)
 
-    def all_questions(self):
-        return self.repository.all()
+    def get_question(self, identifier: str):
+        return self.questions.get(identifier)
+
+    def list_questions(self):
+        return self.questions.list()
