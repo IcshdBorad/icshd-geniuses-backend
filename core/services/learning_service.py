@@ -1,22 +1,28 @@
 from core.persistence.memory_database import MemoryDatabase
+
 from core.repositories.memory_skill_repository import MemorySkillRepository
+
+from core.use_cases.get_skill import GetSkillUseCase
+from core.use_cases.save_skill import SaveSkillUseCase
+
 from packages.contracts.skill import Skill
 
 
 class LearningService:
     """
-    Application service for learning.
+    Application service for learning operations.
     """
 
     def __init__(self):
         self.database = MemoryDatabase()
-        self.skills = MemorySkillRepository(self.database)
 
-    def save_skill(self, skill: Skill):
-        self.skills.save(skill)
+        repository = MemorySkillRepository(self.database)
 
-    def get_skill(self, identifier: str):
-        return self.skills.get(identifier)
+        self.get_skill = GetSkillUseCase(repository)
+        self.save_skill = SaveSkillUseCase(repository)
 
-    def list_skills(self):
-        return self.skills.list()
+    def add_skill(self, skill: Skill) -> None:
+        self.save_skill.execute(skill)
+
+    def get(self, identifier: str) -> Skill | None:
+        return self.get_skill.execute(identifier)

@@ -1,10 +1,11 @@
 from core.services.learning_service import LearningService
+
 from packages.contracts.skill import Skill
 
 
 service = LearningService()
 
-service.save_skill(
+service.add_skill(
     Skill(
         identifier="SKILL-ADD-001",
         name="Addition",
@@ -14,4 +15,4 @@ service.save_skill(
     )
 )
 
-print(service.get_skill("SKILL-ADD-001"))
+print(service.get("SKILL-ADD-001"))
