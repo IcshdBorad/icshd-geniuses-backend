@@ -1,4 +1,5 @@
-from core.repositories.interfaces.skill_repository import SkillRepositoryfrom core.persistence.memory_database import MemoryDatabase
+from core.repositories.skill_repository import SkillRepository
+from core.persistence.memory_database import MemoryDatabase
 from packages.contracts.skill import Skill
 
 

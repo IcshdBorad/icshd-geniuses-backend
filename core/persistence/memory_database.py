@@ -1,3 +1,4 @@
+from packages.contracts.learner import Learner
 from packages.contracts.skill import Skill
 from packages.contracts.question import Question
 from packages.contracts.learning_session import LearningSession
@@ -11,6 +12,8 @@ class MemoryDatabase:
     """
 
     def __init__(self):
+        self.learners: dict[str, Learner] = {}
+
         self.skills: dict[str, Skill] = {}
 
         self.questions: dict[str, Question] = {}
@@ -20,5 +23,3 @@ class MemoryDatabase:
         self.attempts: dict[str, Attempt] = {}
 
         self.skill_statuses: dict[str, SkillStatus] = {}
-
-        self.learners: dict[str, dict] = {}
