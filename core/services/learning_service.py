@@ -1,28 +1,77 @@
-from core.persistence.memory_database import MemoryDatabase
+from __future__ import annotations
 
-from core.repositories.memory_skill_repository import MemorySkillRepository
+from core.application.use_cases.start_learning_session import (
+    StartLearningSessionUseCase,
+)
+from core.application.use_cases.submit_answer import (
+    SubmitAnswerUseCase,
+)
 
-from core.use_cases.get_skill import GetSkillUseCase
-from core.use_cases.save_skill import SaveSkillUseCase
-
-from packages.contracts.skill import Skill
+from packages.contracts.learning_session import (
+    LearningSession,
+)
+from packages.contracts.learning.submit_answer_request import (
+    SubmitAnswerRequest,
+)
+from packages.contracts.submit_answer_result import (
+    SubmitAnswerResult,
+)
 
 
 class LearningService:
     """
-    Application service for learning operations.
+    High-level learning application facade.
+
+    Responsibilities
+    ----------------
+    - Expose the learning API.
+    - Delegate work to application use cases.
+
+    This service contains NO business logic.
     """
 
-    def __init__(self):
-        self.database = MemoryDatabase()
+    def __init__(
+        self,
+        start_learning_session: StartLearningSessionUseCase,
+        submit_answer: SubmitAnswerUseCase,
+    ) -> None:
 
-        repository = MemorySkillRepository(self.database)
+        self._start_learning_session = (
+            start_learning_session
+        )
 
-        self.get_skill = GetSkillUseCase(repository)
-        self.save_skill = SaveSkillUseCase(repository)
+        self._submit_answer = (
+            submit_answer
+        )
 
-    def add_skill(self, skill: Skill) -> None:
-        self.save_skill.execute(skill)
+    # ---------------------------------------------------------
+    # Learning Session
+    # ---------------------------------------------------------
 
-    def get(self, identifier: str) -> Skill | None:
-        return self.get_skill.execute(identifier)
+    def start_learning_session(
+        self,
+        learner_id: str,
+    ) -> LearningSession:
+        """
+        Starts a new adaptive learning session.
+        """
+
+        return self._start_learning_session.execute(
+            learner_id=learner_id,
+        )
+
+    # ---------------------------------------------------------
+    # Answer Submission
+    # ---------------------------------------------------------
+
+    def submit_answer(
+        self,
+        request: SubmitAnswerRequest,
+    ) -> SubmitAnswerResult:
+        """
+        Processes a learner answer.
+        """
+
+        return self._submit_answer.execute(
+            request,
+        )

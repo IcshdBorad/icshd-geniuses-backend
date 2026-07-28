@@ -1,19 +1,37 @@
+from __future__ import annotations
+
 from dataclasses import dataclass
 from datetime import datetime
-from typing import Optional
 
 
 @dataclass(frozen=True)
 class Attempt:
     """
-    Represents a learner attempt on a question.
+    Represents a single learner attempt.
+
+    One Attempt is created every time the learner
+    submits an answer to a question.
+
+    This object is immutable and stores both the
+    learner answer and the adaptive-learning state
+    generated from that answer.
     """
+
+    # ---------------------------------------------------------
+    # Identity
+    # ---------------------------------------------------------
 
     identifier: str
 
     learner_id: str
 
+    session_id: str
+
     question_id: str
+
+    # ---------------------------------------------------------
+    # Learner Answer
+    # ---------------------------------------------------------
 
     submitted_answer: str
 
@@ -25,4 +43,18 @@ class Attempt:
 
     score: float = 1.0
 
-    external_id: Optional[str] = None
+    # ---------------------------------------------------------
+    # Spaced Repetition
+    # ---------------------------------------------------------
+
+    review_stage: int = 0
+
+    ease_factor: float = 2.5
+
+    next_review: datetime | None = None
+
+    # ---------------------------------------------------------
+    # External Integration
+    # ---------------------------------------------------------
+
+    external_id: str | None = None
