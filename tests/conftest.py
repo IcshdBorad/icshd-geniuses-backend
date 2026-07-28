@@ -1,48 +1,52 @@
 import pytest
-from httpx import AsyncClient, ASGITransport
-from fastapi.testclient import TestClient
+from httpx import ASGITransport, AsyncClient
+from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
+from sqlalchemy.orm import sessionmaker
+
 from api.main import app
-from core.database import Base, engine, get_db, TestingSessionLocal
-from core.infrastructure.models import LearnerModel
+from core.config import settings
 
 
-@pytest.fixture(scope="session", autouse=True)
-def setup_test_database():
-    Base.metadata.create_all(bind=engine)
-    yield
-    Base.metadata.drop_all(bind=engine)
-
-
-@pytest.fixture
-def db_session():
-    connection = engine.connect()
-    transaction = connection.begin()
-    session = TestingSessionLocal(bind=connection)
-    
-    yield session
-    
-    session.close()
-    transaction.rollback()
-    connection.close()
+# 1. كائن وهمي يمثل المتعلم للاختبارات
+class DummyLearner:
+    def __init__(self, learner_id: str = "learner_123"):
+        self.id = learner_id
 
 
 @pytest.fixture
-def client():
-    with TestClient(app) as test_client:
-        yield test_client
+def test_learner():
+    """يوفر كائن متعلم وهمي للاختبارات."""
+    return DummyLearner()
 
 
-@pytest.fixture
+# 2. عميل HTTP لاختبارات API
+@pytest.fixture(scope="function")
 async def async_client():
-    transport = ASGITransport(app=app)
-    async with AsyncClient(transport=transport, base_url="http://test") as ac:
-        yield ac
+    """يوفر عميل AsyncClient مرتبط بـ FastAPI app."""
+    async with AsyncClient(
+        transport=ASGITransport(app=app), base_url="http://test"
+    ) as client:
+        yield client
 
 
-@pytest.fixture
-def test_learner(db_session):
-    learner = LearnerModel(id="test-learner-123", name="Test Learner")
-    db_session.add(learner)
-    db_session.commit()
-    db_session.refresh(learner)
-    return learner
+# 3. فيكتشر قاعدة البيانات للاختبارات التكاملية (Integration Tests)
+@pytest.fixture(scope="function")
+async def db_session():
+    """يوفر جلسة قاعدة بيانات لا تزامنية لاختبارات Neon DB."""
+    # استخدام رابط قاعدة البيانات من الإعدادات البيئية
+    db_url = getattr(settings, "DATABASE_URL", None) or getattr(
+        settings, "NEON_DATABASE_URL", None
+    )
+
+    if not db_url:
+        pytest.skip("لم يتم العثور على DATABASE_URL في الإعدادات.")
+
+    engine = create_async_engine(db_url, echo=False)
+    async_session = sessionmaker(
+        engine, class_=AsyncSession, expire_on_commit=False
+    )
+
+    async with async_session() as session:
+        yield session
+
+    await engine.dispose()
