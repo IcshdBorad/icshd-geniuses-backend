@@ -58,4 +58,4 @@ jobs:
           TESTING: "true"
           PYTHONPATH: .
         run: |
-          pytest -v --cov=. --cov-report=term-missing
+          pytest -v
