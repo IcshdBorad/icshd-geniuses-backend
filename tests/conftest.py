@@ -4,6 +4,7 @@ from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
 from sqlalchemy.orm import sessionmaker
 
 from api.main import app
+from api.routers.learners import fake_learners_db
 from core.config import settings
 
 
@@ -15,8 +16,20 @@ class DummyLearner:
 
 @pytest.fixture
 def test_learner():
-    """يوفر كائن متعلم وهمي للاختبارات."""
-    return DummyLearner()
+    """يوفر كائن متعلم وهمي ويحقنه في قاعدة البيانات المؤقتة للاختبارات."""
+    learner = DummyLearner(learner_id="learner_123")
+    
+    # حشو بيانات المتعلم في ذاكرة الراوتر حتى تعثر عليه اختبارات GET / PUT
+    fake_learners_db[learner.id] = {
+        "id": learner.id,
+        "name": "Test Learner",
+        "email": "test@example.com"
+    }
+    
+    yield learner
+    
+    # تنظيف البيانات بعد الانتهاء من الاختبار
+    fake_learners_db.pop(learner.id, None)
 
 
 # 2. عميل HTTP لاختبارات API
